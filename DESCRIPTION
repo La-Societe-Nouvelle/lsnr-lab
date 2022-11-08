@@ -1,0 +1,51 @@
+Package: lsnr
+Title: Societal footprint by economic activities
+Version: 1.0
+Authors@R: 
+    person("Joris", "BLAIN", , "joris.blain@lasocietenouvelle.org", role = c("aut", "cre"))
+Description: This package provides a set of R functions designed to compute French economic activities societal footprints. More precisely, they allow the user to roughly modelize French economic activity and its interactions
+    and to compute related societal footprints by 38 NACE branches and 88 NACE divisions. It offers a 12 non-financial dimensions framework. Detailed documentation and metholodology are availables online <https://docs.lasocietenouvelle.org/>.
+    This package is designed by La 'Societe Nouvelle', a French organization that set up a non financial national information system.
+URL: https://github.com/La-Societe-Nouvelle, https://lasocietenouvelle.org/, https://lasocietenouvelle.org/portail, https://www.linkedin.com/company/la-societe-nouvelle/.
+Depends: 
+    R (>= 4.0.0)
+License: CeCILL
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Imports: 
+    caret,
+    curl,
+    data.table,
+    devtools,
+    dplyr,
+    elasticnet,
+    eurostat,
+    glmnet,
+    insee,
+    memoise,
+    neuralnet,
+    odbc,
+    OECD,
+    openxlsx,
+    randomForest,
+    rdbnomics,
+    readr,
+    readxl,
+    remotes,
+    RPostgres,
+    RPostgreSQL,
+    rsdmx,
+    rwebstat,
+    stringr,
+    this.path,
+    tidyr,
+    utils,
+    vars,
+    wbstats,
+    WDI,
+    writexl
+RoxygenNote: 7.2.1

@@ -1,0 +1,14 @@
+#' @keywords internal
+"_PACKAGE"
+
+## usethis namespace: start
+#' @importFrom dplyr %>%
+#' @importFrom dplyr select
+#' @importFrom eurostat get_eurostat
+#' @importFrom insee get_insee_dataset
+#' @importFrom stringr str_remove
+#' @importFrom tidyr pivot_wider
+#' @importFrom utils read.csv
+## usethis namespace: end
+NULL
+
