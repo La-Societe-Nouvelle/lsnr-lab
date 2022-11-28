@@ -21,12 +21,12 @@ BuildECOData=function(Year){
   else{
 
     ##Build ERE Database
-    ERE=FetchDataERE(Year)
+    ERE=get_products_aggregates(Year)
     ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
 
     ##Build CPEB Database : P1 - P2
 
-    CPEB=FetchDataCPEB(Year)
+    CPEB=get_branches_aggregates(Year)
 
     ECOFR=as.data.frame(ReferenceTable)
      names(ECOFR)="id"

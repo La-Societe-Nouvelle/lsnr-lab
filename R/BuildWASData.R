@@ -18,12 +18,12 @@ BuildWASData=function(Year){
     return("Desired year is unavailable. Please, refer to FetchDataDisponibility function in order to find available years for a given indicator")
   }else{
     ##Build ERE Database
-    ERE=FetchDataERE(Year)
+    ERE=get_products_aggregates(Year)
     ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
 
     ##Build CPEB Database : P1 - P2
 
-    CPEB=FetchDataCPEB(Year)
+    CPEB=get_branches_aggregates(Year)
 
     RawWAS=get_eurostat("env_wasgen") #filters = list(geo = "FR",unit = "T", hazard = "HAZ_NHAZ", time = Year))
     RawWAS=RawWAS[RawWAS$waste=="TOTAL" & (RawWAS$geo=="FR" | RawWAS$geo=="EU28") & RawWAS$unit=="T" & RawWAS$hazard=="HAZ_NHAZ" & RawWAS$time==paste0(Year,"-01-01"),]

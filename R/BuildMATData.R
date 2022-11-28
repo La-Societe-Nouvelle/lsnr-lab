@@ -22,12 +22,12 @@ BuildMATData=function(Year){
   else{
 
     ##Build ERE Database
-    ERE=FetchDataERE(Year)
+    ERE=get_products_aggregates(Year)
     ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
 
     ##Build CPEB Database : P1 - P2
 
-    CPEB=FetchDataCPEB(Year)
+    CPEB=get_branches_aggregates(Year)
 
     RawMAT=get_eurostat("env_ac_mfa")
     RawMAT=RawMAT[RawMAT$unit=="THS_T" & RawMAT$time==paste0(Year,"-01-01") & RawMAT$material %in% c("MF1","MF2","MF3","MF4","TOTAL") & RawMAT$geo %in% c("FR","EU27_2020"),]

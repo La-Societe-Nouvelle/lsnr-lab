@@ -18,12 +18,12 @@ BuildNRGData=function(Year){
     return("Desired year is unavailable. Please, refer to FetchDataDisponibility function in order to find available years for a given indicator")
   }else{
   ##Build ERE Database
-  ERE=FetchDataERE(Year)
+  ERE=get_products_aggregates(Year)
   ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
 
   ##Build CPEB Database : P1 - P2
 
-  CPEB=FetchDataCPEB(Year)
+  CPEB=get_branches_aggregates(Year)
   include=c("A","A01","A02","A03","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31_C32","C33","CH_INV_PA","D","E","E36","E37-E39","ENV","F","G","G45","G46","G47","H","H49","H50","H51","H52","H53","HH", "HH_HEAT","HH_OTH","HH_TRA","I","J","J58","J59_J60","J61","J62_J63","K","K64","K65","K66","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","N77","N78","N79","N80-N82","NRG_FLOW","O","P","Q","Q86","Q87_Q88","R","R90-R92","R93","ROW_ACT","S","S94","S95","S96","SD_SU","T","TOTAL","U")
   DataNRG=rbind(get_eurostat("env_ac_pefasu",time_format = "num",filters=list(stk_flow="SUP",time=Year,unit="TJ",geo=c("EU27_2020","FR"),prod_nrg="R30",nace_r2=include[1:49])),get_eurostat("env_ac_pefasu",time_format = "num",filters=list(stk_flow="SUP",time=Year,unit="TJ",geo=c("EU27_2020","FR"),prod_nrg="R30",nace_r2=include[50:87])))
   DataNRG$values=1000*DataNRG$values

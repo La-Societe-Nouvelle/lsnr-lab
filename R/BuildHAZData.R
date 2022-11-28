@@ -21,12 +21,12 @@ BuildHAZData=function(Year){
   else{
 
     ##Build ERE Database
-    ERE=FetchDataERE(Year)
+    ERE=get_products_aggregates(Year)
     ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
 
     ##Build CPEB Database : P1 - P2
 
-    CPEB=FetchDataCPEB(Year)
+    CPEB=get_branches_aggregates(Year)
 
     RawHAZ=get_eurostat("env_chmhaz", time_format = "date", filters = list(hazard = "HAZ", time = Year, indic_env ="CONS"))
     GDPEU27=get_eurostat("nama_10_a64")

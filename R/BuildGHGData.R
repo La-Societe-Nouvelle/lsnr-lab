@@ -22,12 +22,12 @@ BuildGHGData=function(Year){
   else{
 
     ##Build ERE Database
-    ERE=FetchDataERE(Year)
+    ERE=get_products_aggregates(Year)
     ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
 
     ##Build CPEB Database : P1 - P2
 
-    CPEB=FetchDataCPEB(Year)
+    CPEB=get_branches_aggregates(Year)
 
     include=c("A","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31_C32","C33","D","E","F","G","H","I","J","J58","J59_J60","J61","J62_J63","K","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","O","P","Q","Q86","Q87_Q88","R","S","T","TOTAL")
     GHGFRA=rbind(get_eurostat("env_ac_ainah_r2",time_format = "num", filters=list(unit="T",geo="FR",time=Year,airpol="GHG",nace_r2=include[1:26])),get_eurostat("env_ac_ainah_r2",time_format = "num", filters=list(unit="T",geo="FR",time=Year,airpol="GHG",nace_r2=include[27:52])))

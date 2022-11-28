@@ -19,12 +19,12 @@ BuildGEQData=function(Year){
     return("Desired year is unavailable. Please, refer to FetchDataDisponibility function in order to find available years for a given indicator")
   }else{
     ##Build ERE Database
-    ERE=FetchDataERE(Year)
+    ERE=get_products_aggregates(Year)
     ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
 
     ##Build CPEB Database : P1 - P2
 
-    CPEB=FetchDataCPEB(Year)
+    CPEB=get_branches_aggregates(Year)
 
     RAWGEQ=get_eurostat("earn_ses_hourly")
     RAWGEQ=RAWGEQ[RAWGEQ$geo %in% c("EU28","FR") & RAWGEQ$age=="TOTAL" & RAWGEQ$indic_se=="MEAN_E_EUR" & RAWGEQ$isco08=="TOTAL" & RAWGEQ$worktime=="TOTAL" & RAWGEQ$time==paste0(Year,"-01-01"),]

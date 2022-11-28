@@ -23,15 +23,15 @@ BuildDivisionsData=function(Indicator,Year){
     Year1=Year}
 
     #Call default values by 38 branches
-    BranchesData=BuildBranchesData(toupper(Indicator),Year)
+    BranchesData=buildBranchesData(toupper(Indicator),Year)
     DivData=lapply(Year,paste0("Build",Indicator,"Data"))
     #Call production and business data by 88 branches
     CPEBDivisionsDataRaw=get_insee_dataset("CNA-2014-CPEB",startPeriod = Year,endPeriod = Year,filter="A...VAL.....BRUT")
     CPEBDivisionsDataRaw=CPEBDivisionsDataRaw[grepl("A88",CPEBDivisionsDataRaw$CNA_ACTIVITE),] %>% select(OBS_VALUE, CNA_ACTIVITE,OPERATION)
     CPEBDivisionsDataRaw$CNA_ACTIVITE=str_remove(CPEBDivisionsDataRaw$CNA_ACTIVITE,"A88-")
     CPEBDivisionsData=pivot_wider(CPEBDivisionsDataRaw,names_from = OPERATION,values_from = OBS_VALUE)
-    CCF=FetchDataCFC(Year)
-    CPEBBranches=FetchDataCPEB(Year)
+    CCF=get_cfc_matrix(Year)
+    CPEBBranches=get_branches_aggregates(Year)
     for(i in 1:nrow(BranchesData)){BranchesData$TCCF[i]=ifelse(BranchesData$branch[i]%in%CCF$CNA_ACTIVITE,CCF$TOTAL[CCF$CNA_ACTIVITE==BranchesData$branch[i]]/CPEBBranches$B1G[CPEBBranches$CNA_ACTIVITE==BranchesData$branch[i]],0)}
 
     #Matching between 38 branches and 88 divisions

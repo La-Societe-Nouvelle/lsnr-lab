@@ -20,12 +20,12 @@ BuildWATData=function(Year){
     return("Desired year is unavailable. Please, refer to FetchDataDisponibility function in order to find available years for a given indicator")
   }else{
     ##Build ERE Database
-    ERE=FetchDataERE(Year)
+    ERE=get_products_aggregates(Year)
     ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
 
     ##Build CPEB Database : P1 - P2
 
-    CPEB=FetchDataCPEB(Year)
+    CPEB=get_branches_aggregates(Year)
 
     #Build WAT Database
     RAWWAT=get_eurostat("env_wat_abs",time_format = "num",filters = list(geo = c("FR"), unit = "MIO_M3",time = Year,wat_src = "FRW"))
