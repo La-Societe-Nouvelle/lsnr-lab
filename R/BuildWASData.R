@@ -12,46 +12,77 @@
 #' @examples
 #' BuildWASData(max(FetchDataDisponibility("WAS"))
 #' @export
-BuildWASData=function(Year){
-  WASDisponibility=FetchDataDisponibility("WAS")
-  if((Year %in% WASDisponibility)==F){
-    return("Desired year is unavailable. Please, refer to FetchDataDisponibility function in order to find available years for a given indicator")
-  }else{
-    ##Build ERE Database
-    ERE=get_products_aggregates(Year)
-    ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
 
-    ##Build CPEB Database : P1 - P2
+source('R/InseeDataManager.R')
 
-    CPEB=get_branches_aggregates(Year)
+build_branches_nva_fpt_was = function(year) 
+{
+  # get branches aggregates
+  branches_aggregates = get_branches_aggregates(year)
 
-    RawWAS=get_eurostat("env_wasgen") #filters = list(geo = "FR",unit = "T", hazard = "HAZ_NHAZ", time = Year))
-    RawWAS=RawWAS[RawWAS$waste=="TOTAL" & (RawWAS$geo=="FR" | RawWAS$geo=="EU28") & RawWAS$unit=="T" & RawWAS$hazard=="HAZ_NHAZ" & RawWAS$time==paste0(Year,"-01-01"),]
-    TableTransition=read.csv("https://raw.githubusercontent.com/La-Societe-Nouvelle/LaSocieteNouvelle-defautdata/master/DefaultData-LSN/donnees/insee_branches.csv",sep=",",encoding="UTF-8",header = F,col.names = c("libelle","branche","nace"))
-    TableTransition$nace[TableTransition$nace==""]=NA
-    for(i in 1:nrow(RawWAS)){
-      RawWAS$nace[i]=TableTransition$branche[TableTransition$nace==RawWAS$nace_r2[i]]
-      if(is.na(RawWAS$nace[i])){RawWAS$nace[i]=0}
+  # get mat data
+  eurostat_data = get_eurostat("env_wasgen")
+
+  wasgen_data = eurostat_data %>%
+    filter(geo=="FR") %>%
+    filter(waste=="TOTAL") %>%
+    filter(hazard=="HAZ_NHAZ") %>%
+    filter(unit=="T") %>%
+    filter(time == paste0(year,"-01-01"))
+
+  # sector fpt
+
+  wd = getwd()
+  branches = read.csv(paste0(wd,"/lib/","Branches.csv"), header=T, sep=";")
+
+  sector_fpt_list = list()
+  for (i in 1:nrow(branches)) {
+    code_nace = branches$NACE_R2[i]
+    if (code_nace %in% wasgen_data$nace_r2) {
+      sector_fpt_list[[code_nace]] = wasgen_data$values[wasgen_data$nace_r2==code_nace] / branches_aggregates$NVA[i]
     }
-    WASFRA=as.data.frame(ReferenceTable)
-    names(WASFRA)="id"
-    WASFRA$val[substr(WASFRA$id,1,1) %in% c("G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","X")]=RawWAS$values[RawWAS$nace_r2=="G-U_X_G4677" & RawWAS$geo=="FR"]+RawWAS$values[RawWAS$nace_r2=="G4677" & RawWAS$geo=="FR"]
-    for(i in 1:nrow(WASFRA)){
-      WASFRA$val[i]=ifelse(WASFRA$id[i] %in% RawWAS$nace,RawWAS$values[RawWAS$nace==WASFRA$id[i] & RawWAS$geo=="FR"],WASFRA$val[i])
-      WASFRA$val[i]=ifelse(is.na(WASFRA$val[i]),sum(RawWAS$values[substr(RawWAS$nace,1,1)=="C" & (WASFRA$id[i] %in% RawWAS$nace)==FALSE & RawWAS$geo=="FR"]),WASFRA$val[i])
-      WASFRA$B1G[i]=CPEB$B1G[CPEB$CNA_ACTIVITE==WASFRA$id[i]]
-    }
-    WASFRA$ComputedValue[substr(WASFRA$id,1,1) %in% c("G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","X")]=(RawWAS$values[RawWAS$nace_r2=="G-U_X_G4677" & RawWAS$geo=="FR"]+RawWAS$values[RawWAS$nace_r2=="G4677" & RawWAS$geo=="FR"])/sum(WASFRA$B1G[substr(WASFRA$id,1,1) %in% c("G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","X")])
-    for(i in 1:nrow(WASFRA)){
-      WASFRA$ComputedValue[i]=ifelse(WASFRA$id[i] %in% RawWAS$nace,WASFRA$val[i]/WASFRA$B1G[i],WASFRA$ComputedValue[i])
-      WASFRA$ComputedValue[i]=ifelse(is.na(WASFRA$ComputedValue[i]),sum(RawWAS$values[substr(RawWAS$nace,1,1)=="C" & (WASFRA$id[i] %in% RawWAS$nace)==FALSE])/sum(WASFRA$B1G[substr(WASFRA$id,1,1)=="C" & (WASFRA$id[i] %in% RawWAS$nace)==FALSE]),WASFRA$ComputedValue[i]) #attention : sum de l'ensemble des C : faire soustraction pour WASFRA$val et WASFRA$ComputedValue
-    }
+  }
 
-    GDPEU28=get_eurostat("nama_10_a64")
-    GDPEU28=GDPEU28[GDPEU28$geo %in% c("EU28","FR") & GDPEU28$na_item=="B1G" & GDPEU28$unit=="CP_MEUR" & GDPEU28$time==paste0(Year,"-01-01") & GDPEU28$nace_r2=="TOTAL",]
+  # CC / C16-C18
+  sector_fpt_list[["C16-C18"]] = sum(wasgen_data$values[wasgen_data$nace_r2 %in% c("C16","C17_C18")]) / branches_aggregates$NVA[branches_aggregates$BRANCH=="CC"]
+  # CE - CF - CG / C20-C23
+  sector_fpt_list[["C20-C23"]] = sum(wasgen_data$values[wasgen_data$nace_r2 %in% c("C20-C22","C23")]) / sum(branches_aggregates$NVA[branches_aggregates$BRANCH %in% c("CE","CF","CG")])
+  # CI - CJ - CK - CL / C26-C30
+  sector_fpt_list[["C26-C30"]] = wasgen_data$values[wasgen_data$nace_r2=="C26-C30"] / sum(branches_aggregates$NVA[branches_aggregates$BRANCH %in% c("CI","CJ","CK","CL")])
+  # GZ -> TZ / G-U_X_G4677 + G4677
+  fpt_g_u_x_g4677 = wasgen_data$values[wasgen_data$nace_r2=="G-U_X_G4677"] / sum(branches_aggregates$NVA[branches_aggregates$BRANCH %in% c("GZ","HZ","IZ","JA","JB","JC","KZ","LZ","MA","MB","MC","NZ","OZ","PZ","QA","QB","RZ","SZ","TZ")])
+  sector_fpt_list[["G"]] = fpt_g_u_x_g4677 + wasgen_data$values[wasgen_data$nace_r2=="G4677"] / branches_aggregates$NVA[branches_aggregates$BRANCH=="GZ"]
+  sector_fpt_list[["H-T"]] = fpt_g_u_x_g4677
 
-    EU28WAS=((RawWAS$values[RawWAS$nace_r2=="TOTAL_HH" & RawWAS$geo=="EU28"]-RawWAS$values[RawWAS$nace_r2=="EP_HH" & RawWAS$geo=="EU28"])/GDPEU28$values[GDPEU28$geo=="EU28"])/((RawWAS$values[RawWAS$nace_r2=="TOTAL_HH" & RawWAS$geo=="FR"]-RawWAS$values[RawWAS$nace_r2=="EP_HH" & RawWAS$geo=="FR"])/GDPEU28$values[GDPEU28$geo=="FR"])
-    Source="Insee and Eurostat"
-    Unit="G_CPEUR"
-    DataWAS=list(WASFRA[,c(1,4)],EU28WAS,Source,Unit)
-    return(DataWAS)}}
+  sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(sector_fpt_list))
+  colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
+  print(sector_fpt)
+
+  # build nva fpt
+
+  nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
+  colnames(nva_fpt_data) = c("BRANCH", "NVA")
+
+  wd = getwd()
+  branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixWAS.csv"), header=T, sep=";")
+
+  for(i in 1:nrow(nva_fpt_data))
+  {
+    # get sector
+    branch = nva_fpt_data$BRANCH[i]
+    sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
+    
+    # build values
+    nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector] * branches_aggregates$NVA[i]
+    nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
+    nva_fpt_data$UNIT_FOOTPRINT[i] = "G_CPEUR"
+  }
+
+  return(nva_fpt_data)
+}
+
+get_branches_imp_coef_was = function(year)
+{
+  branches_imp_coef = 0
+  return(branches_imp_coef)
+}

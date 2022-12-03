@@ -17,12 +17,12 @@ print(wd)
 
 #list.files()
 
-#source("R/BuildARTData.R")
+source("R/BuildGEQData.R")
 source("R/BuildBranchesData.R")
 
-
 print("start")
-test = buildBranchesData("art", 2015)
+#test = buildBranchesData("art", 2015)
+test = build_branches_nva_fpt_geq("2018")
 print(test)
 
 

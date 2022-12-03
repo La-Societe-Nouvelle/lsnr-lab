@@ -14,44 +14,71 @@
 #' @examples
 #' BuildWATData(max(FetchDataDisponibility("WAT"))
 #' @export
-BuildWATData=function(Year){
-  WATDisponibility=FetchDataDisponibility("WAT")
-  if((Year %in% WATDisponibility)==F){
-    return("Desired year is unavailable. Please, refer to FetchDataDisponibility function in order to find available years for a given indicator")
-  }else{
-    ##Build ERE Database
-    ERE=get_products_aggregates(Year)
-    ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
 
-    ##Build CPEB Database : P1 - P2
+source('R/InseeDataManager.R')
 
-    CPEB=get_branches_aggregates(Year)
+build_branches_nva_fpt_wat = function(year) 
+{
+  # get branches aggregates
+  branches_aggregates = get_branches_aggregates(year)
 
-    #Build WAT Database
-    RAWWAT=get_eurostat("env_wat_abs",time_format = "num",filters = list(geo = c("FR"), unit = "MIO_M3",time = Year,wat_src = "FRW"))
-    RAWWAT$values=1000*RAWWAT$values
-    RAWWAT$valintensite[RAWWAT$wat_proc=="ABS_AGR"]=RAWWAT$values[RAWWAT$wat_proc=="ABS_AGR"]/sum(CPEB$B1G[CPEB$CNA_ACTIVITE=="AZ"])
-    RAWWAT$valintensite[RAWWAT$wat_proc=="ABS_MIN"]=RAWWAT$values[RAWWAT$wat_proc=="ABS_MIN"]/sum(CPEB$B1G[CPEB$CNA_ACTIVITE=="BZ"])
-    RAWWAT$valintensite[RAWWAT$wat_proc=="ABS_IND"]=RAWWAT$values[RAWWAT$wat_proc=="ABS_IND"]/sum(CPEB$B1G[substr(CPEB$CNA_ACTIVITE,1,1) %in% c("C","E")])
-    RAWWAT$valintensite[RAWWAT$wat_proc=="ABS_ELC_CL"]=RAWWAT$values[RAWWAT$wat_proc=="ABS_ELC_CL"]/sum(CPEB$B1G[CPEB$CNA_ACTIVITE=="DZ"])
-    RAWWAT$valintensite[RAWWAT$wat_proc=="ABS_CON"]=RAWWAT$values[RAWWAT$wat_proc=="ABS_CON"]/sum(CPEB$B1G[CPEB$CNA_ACTIVITE=="FZ"])
-    RAWWAT$valintensite[RAWWAT$wat_proc=="ABS_SER"]=RAWWAT$values[RAWWAT$wat_proc=="ABS_SER"]/sum(CPEB$B1G[substr(CPEB$CNA_ACTIVITE,1,1) %in% c("G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U")])
+  # fetch data
+  eurostat_data = get_eurostat(
+    "env_wat_abs",
+    time_format = "num",
+    filters = list(geo = c("FR"), unit = "MIO_M3", time = year, wat_src = "FRW")
+  )
 
+  wat_abs_data = eurostat_data %>%
+      pivot_wider(names_from = wat_proc, values_from = values)
 
-    #Applied consumption coefficient (SDES - Bilan environnemental 2021) to find consumption from initial abstractions : Agriculture = 0.82 ; Industry = 0.07 ; Energy = 0.10 ; Other (potable water) = 0.21
-    FRAWAT=as.data.frame(ReferenceTable)
-    FRAWAT$val[FRAWAT=="AZ"]=RAWWAT$valintensite[RAWWAT$wat_proc=="ABS_AGR"]*0.82
-    FRAWAT$val[FRAWAT[,1]=="BZ"]=RAWWAT$valintensite[RAWWAT$wat_proc=="ABS_MIN"]*0.07
-    FRAWAT$val[substr(FRAWAT[,1],1,1) %in% c("C","E")]=RAWWAT$valintensite[RAWWAT$wat_proc=="ABS_IND"]
-    FRAWAT$val[substr(FRAWAT[,1],1,1) %in% c("C")]=FRAWAT$val[substr(FRAWAT[,1],1,1) %in% c("C")]*0.07
-    FRAWAT$val[substr(FRAWAT[,1],1,1) %in% c("E")]=FRAWAT$val[substr(FRAWAT[,1],1,1) %in% c("E")]*0.21
-    FRAWAT$val[FRAWAT[,1]=="DZ"]=RAWWAT$valintensite[RAWWAT$wat_proc=="ABS_ELC_CL"]*0.1
-    FRAWAT$val[FRAWAT[,1]=="FZ"]=RAWWAT$valintensite[RAWWAT$wat_proc=="ABS_CON"]*0.21
-    FRAWAT$val[substr(FRAWAT[,1],1,1) %in% c("G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U")]=RAWWAT$valintensite[RAWWAT$wat_proc=="ABS_SER"]*0.21
+  # raw fpt
+  raw_fpt = list()
+  raw_fpt$AGR_FPT = wat_abs_data$ABS_AGR[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "AZ"]
+  raw_fpt$MIN_FPT = wat_abs_data$ABS_MIN[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "BZ"]
+  raw_fpt$IND_FPT = wat_abs_data$ABS_IND[1]*1000 / sum(branches_aggregates$NVA[branches_aggregates$BRANCH %in% c("CA","CB","CC","CD","CE","CF","CG","CH","CI","CJ","CK","CL","CM","DZ","EZ")])
+  raw_fpt$ELC_FPT = wat_abs_data$ABS_ELC_CL[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "DZ"]
+  raw_fpt$CON_FPT = wat_abs_data$ABS_CON[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "FZ"]
+  raw_fpt$SER_FPT = wat_abs_data$ABS_SER[1]*1000 / sum(branches_aggregates$NVA[branches_aggregates$BRANCH %in% c("GZ","HZ","IZ","JA","JB","JC","KZ","LZ","MA","MB","MC","NZ","OZ","PZ","QA","QB","RZ","SZ","TZ")])
+  
+  # sector fpt
+  sector_fpt_list = list()
+  sector_fpt_list[["A"]]    = raw_fpt$AGR_FPT
+  sector_fpt_list[["B"]]    = raw_fpt$MIN_FPT
+  sector_fpt_list[["C-E"]]  = raw_fpt$IND_FPT
+  sector_fpt_list[["D"]]    = raw_fpt$IND_FPT + raw_fpt$ELC_FPT
+  sector_fpt_list[["F"]]    = raw_fpt$CON_FPT
+  sector_fpt_list[["G-T"]]  = raw_fpt$SER_FPT
 
-    IMPWAT=RAWWAT$values[RAWWAT$geo=="FR" & RAWWAT$unit=="MIO_M3" & RAWWAT$time==Year & RAWWAT$wat_src=="FRW" & RAWWAT$wat_proc=="ABST"]/RAWWAT$values[RAWWAT$geo=="FR" & RAWWAT$unit=="MIO_M3" & RAWWAT$time==Year & RAWWAT$wat_src=="FRW" & RAWWAT$wat_proc=="ABST"]
+  sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(sector_fpt_list))
+  colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
+  print(sector_fpt)
 
-    Source="Insee - Eurostat - SDES (French Ecological Transition Ministry)"
-    Unit="L_CPEUR"
-    WATData=list(FRAWAT,IMPWAT,Source,Unit)
-    return(WATData)}}
+  # build nva footprint dataframe
+
+  nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
+  colnames(nva_fpt_data) = c("BRANCH", "NVA")
+
+  wd = getwd()
+  branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixWAT.csv"), header=T, sep=";")
+
+  for(i in 1:nrow(nva_fpt_data))
+  {
+    # get sector
+    branch = nva_fpt_data$BRANCH[i]
+    sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
+    
+    # build values
+    nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector] * branches_aggregates$NVA[i]
+    nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
+    nva_fpt_data$UNIT_FOOTPRINT[i] = "L_CPEUR"
+  }
+
+  return(nva_fpt_data)
+}
+
+get_branches_imp_coef_wat = function(year)
+{
+  branches_imp_coef = 0
+  return(branches_imp_coef)
+}

@@ -12,6 +12,9 @@
 #' @examples
 #' BuildHAZData(max(FetchDataDisponibility("HAZ"))
 #' @export
+
+source('R/InseeDataManager.R')
+
 BuildHAZData=function(Year){
 
   HAZDisponibility=FetchDataDisponibility("HAZ")
@@ -44,3 +47,66 @@ BuildHAZData=function(Year){
     Unit="G_CPEUR"
     DataHAZ=list(FRAHAZ,EU27HAZ,Source,Unit)
     return(DataHAZ)}}
+
+build_branches_nva_fpt_haz = function(year) 
+{
+  # get branches aggregates
+  branches_aggregates = get_branches_aggregates(year)
+
+  # fetch data
+  
+  eurostat_env_chmhaz_data = get_eurostat(
+    "env_chmhaz",
+    time_format = "date",
+    filters = list(geo="EU27_2020", time=year, indic_env="CONS", hazard="HAZ", unit="MIO_T")
+  )
+
+  env_chmhaz_data = eurostat_env_chmhaz_data
+
+  eurostat_nama_data = get_eurostat(
+    "nama_10_a64",
+    filters = list(geo="EU27_2020", na_item="B1G", time=year, unit="CP_MEUR", nace_r2="TOTAL")
+  )
+  
+  nama_data = eurostat_nama_data
+
+  # sector fpt
+
+  wd = getwd()
+  branches = read.csv(paste0(wd,"/lib/","Branches.csv"), header=T, sep=";")
+
+  sector_fpt_list = list()
+  sector_fpt_list[["TOTAL"]] = env_chmhaz_data$values*1000000 / nama_data$values
+
+  sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(sector_fpt_list))
+  colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
+  print(sector_fpt)
+
+  # build nva footprint dataframe
+
+  nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
+  colnames(nva_fpt_data) = c("BRANCH", "NVA")
+
+  wd = getwd()
+  branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixHAZ.csv"), header=T, sep=";")
+
+  for(i in 1:nrow(nva_fpt_data))
+  {
+    # get sector
+    branch = nva_fpt_data$BRANCH[i]
+    sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
+    
+    # build values
+    nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector] * branches_aggregates$NVA[i]
+    nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
+    nva_fpt_data$UNIT_FOOTPRINT[i] = "G_CPEUR"
+  }
+
+  return(nva_fpt_data)
+}
+
+get_branches_imp_coef_haz = function(year)
+{
+  branches_imp_coef = 1.0
+  return(branches_imp_coef)
+}

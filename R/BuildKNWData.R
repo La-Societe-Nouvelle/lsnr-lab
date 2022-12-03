@@ -13,52 +13,73 @@
 #' @examples
 #' BuildKNWData(max(FetchDataDisponibility("KNW"))
 #' @export
-BuildKNWData=function(Year){
-  KNWDisponibility=FetchDataDisponibility("KNW")
-  if((Year %in% KNWDisponibility)==F){
-    return("Desired year is unavailable. Please, refer to FetchDataDisponibility function in order to find available years for a given indicator")
-  }else{
-    ##Build ERE Database
-    ERE=get_products_aggregates(Year)
-    ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
 
-    ##Build CPEB Database : P1 - P2
+source('R/InseeDataManager.R')
 
-    CPEB=get_branches_aggregates(Year)
+build_branches_nva_fpt_knw = function(year) 
+{
+  # get branches aggregates
+  branches_aggregates = get_branches_aggregates(year)
 
-RawKNW=get_eurostat("trng_cvt_16n2",time_format = "num",filters = list(geo = c("FR","EU28"), cost = "TOTAL",time=Year))
+  # get eurostat data
+  eurostat_data = get_eurostat(
+    "trng_cvt_16n2",
+    time_format = "num",
+    filters = list(geo="FR", cost="TOTAL", time=year, unit="PC")
+  )
 
-FRAKNW=ReferenceTable
-names(FRAKNW)="NACE"
-FRAKNW$BNACE=substr(FRAKNW$NACE,0,1)
-EU28KNW=as.data.frame(ReferenceTable)
-names(EU28KNW)="NACE"
-EU28KNW$BNACE=substr(FRAKNW$NACE,0,1)
+  trng_cvt_data = eurostat_data
 
-FRAKNW$val[FRAKNW$BNACE %in% c("B","C","D","E")]=RawKNW$values[RawKNW$nace_r2=="B-E" & RawKNW$geo=="FR"]
-FRAKNW$val[FRAKNW$BNACE %in% c("L","M","N","R","S")]=RawKNW$values[RawKNW$nace_r2=="L-N_R_S" & RawKNW$geo=="FR"]
-FRAKNW$val[FRAKNW$BNACE %in% c("J","K")]=RawKNW$values[RawKNW$nace_r2=="J_K" & RawKNW$geo=="FR"]
-FRAKNW$val[FRAKNW$BNACE %in% c("F")]=RawKNW$values[RawKNW$nace_r2=="J_K" & RawKNW$geo=="FR"]
-FRAKNW$val[is.na(FRAKNW$val)==T]=RawKNW$values[RawKNW$nace_r2=="TOTAL" & RawKNW$geo=="FR"]
-FRAKNW$val=FRAKNW$val/100
-for(i in 1:nrow(FRAKNW)){
-  FRAKNW$val[i]=100*FRAKNW$val[i]*CPEB$D1[CPEB$CNA_ACTIVITE==FRAKNW$NACE[i]]/CPEB$B1G[CPEB$CNA_ACTIVITE==FRAKNW$NACE[i]]
+  # sector fpt
+
+  sector_fpt_list = list()
+  sector_fpt_list[["TOTAL"]]  = trng_cvt_data$values[trng_cvt_data$nace_r2=="TOTAL"]
+  sector_fpt_list[["B-E"]]    = trng_cvt_data$values[trng_cvt_data$nace_r2=="B-E"]
+  sector_fpt_list[["F"]]      = trng_cvt_data$values[trng_cvt_data$nace_r2=="F"]
+  sector_fpt_list[["G-I"]]    = trng_cvt_data$values[trng_cvt_data$nace_r2=="G-I"]
+  sector_fpt_list[["J_K"]]    = trng_cvt_data$values[trng_cvt_data$nace_r2=="J_K"]
+  sector_fpt_list[["L-N_R_S"]]= trng_cvt_data$values[trng_cvt_data$nace_r2=="L-N_R_S"]
+
+  sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(sector_fpt_list))
+  colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
+  print(sector_fpt)
+
+  # build nva fpt dataframe
+
+  nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
+  colnames(nva_fpt_data) = c("BRANCH", "NVA")
+
+  wd = getwd()
+  branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixKNW.csv"), header=T, sep=";")
+
+  for(i in 1:nrow(nva_fpt_data))
+  {
+    # get sector
+    branch = nva_fpt_data$BRANCH[i]
+    sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
+    
+    # build values
+    nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]/100 * branches_aggregates$NVA[i]
+    nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
+    nva_fpt_data$UNIT_FOOTPRINT[i] = "P100"
+  }
+
+  return(nva_fpt_data)
 }
 
+get_branches_imp_coef_knw = function(year)
+{
+  # fetch data
+  eurostat_data = get_eurostat(
+    "trng_cvt_16n2",
+    time_format = "num",
+    filters = list(geo=c("FR","EU28"), cost="TOTAL", unit="PC", time=year, nace_r2="TOTAL")
+  )
 
-EU28KNW=RawKNW$values[RawKNW$nace_r2=="TOTAL" & RawKNW$geo=="EU28"]/RawKNW$values[RawKNW$nace_r2=="TOTAL" & RawKNW$geo=="FR"]
+  fpt_fra =  eurostat_data$values[eurostat_data$geo=="FR"]
+  fpt_euu =  eurostat_data$values[eurostat_data$geo=="EU28"]
 
-Source="Insee and Eurostat"
-Unit="P100"
-
-Matching=read.csv("https://raw.githubusercontent.com/La-Societe-Nouvelle/LaSocieteNouvelle-defautdata/master/DefaultData-LSN/donnees/TableFonctionTransition.csv",sep=";",header=T,col.names = c("Numero.de.la.division","Libelle.de.la.division","Code.de.la.branche.associee","Code.OCDE"))
-Matching$Numero.de.la.division[nchar(Matching$Numero.de.la.division)==1]=paste0("0",Matching$Numero.de.la.division[nchar(Matching$Numero.de.la.division)==1])
-
-DivKNW=as.data.frame(Matching[-88,c(1,3)])
-for(i in 1:nrow(DivKNW)){
-  DivKNW$value[i]=FRAKNW$val[FRAKNW$NACE==DivKNW$Code.de.la.branche.associee[i]]
+  branches_imp_coef = fpt_euu / fpt_fra
+  
+  return(branches_imp_coef)
 }
-DivKNW$value[DivKNW$Numero.de.la.division%in%c("72","85")]=100
-
-KNWData=list(FRAKNW[,-2],EU28KNW,Source,Unit,DivKNW[,c(1,3)])
-return(KNWData)}}

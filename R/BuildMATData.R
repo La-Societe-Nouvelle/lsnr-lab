@@ -13,36 +13,71 @@
 #' @examples
 #' BuildMATData(max(FetchDataDisponibility("MAT"))
 #' @export
-BuildMATData=function(Year){
 
-  MATDisponibility=FetchDataDisponibility("MAT")
-  if((Year %in% MATDisponibility)==F){
-    return("Desired year is unavailable. Please, refer to FetchDataDisponibility function in order to find available years for a given indicator")
+source('R/InseeDataManager.R')
+
+build_branches_nva_fpt_mat = function(year) 
+{
+  # get branches aggregates
+  branches_aggregates = get_branches_aggregates(year)
+
+  # get eurostat data
+  eurostat_data = get_eurostat("env_ac_mfa")
+
+  ac_mfa_data = eurostat_data %>%
+    filter(geo == "FR") %>%
+    filter(indic_env == "DE") %>%
+    filter(unit == "THS_T") %>%
+    filter(time == paste0(year,"-01-01")) %>%
+    filter(material %in% c("MF1","MF2","MF3","MF4"))
+
+  # sector fpt
+
+  sector_fpt_list = list()
+  sector_fpt_list[["A"]]    = ac_mfa_data$values[ac_mfa_data$material=="MF1"]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH=="AZ"]
+  sector_fpt_list[["B"]]    = sum(ac_mfa_data$values[ac_mfa_data$material %in% c("MF2","MF3","MF4")])*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH=="BZ"]
+  sector_fpt_list[["C-T"]]  = 0
+
+  sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(sector_fpt_list))
+  colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
+  print(sector_fpt)
+
+  # build nva fpt dataframe
+
+  nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
+  colnames(nva_fpt_data) = c("BRANCH", "NVA")
+
+  wd = getwd()
+  branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixMAT.csv"), header=T, sep=";")
+
+  for(i in 1:nrow(nva_fpt_data))
+  {
+    # get sector
+    branch = nva_fpt_data$BRANCH[i]
+    sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
+    
+    # build values
+    nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector] * branches_aggregates$NVA[i]
+    nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
+    nva_fpt_data$UNIT_FOOTPRINT[i] = "G_CPEUR"
   }
-  else{
 
-    ##Build ERE Database
-    ERE=get_products_aggregates(Year)
-    ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
+  return(nva_fpt_data)
+}
 
-    ##Build CPEB Database : P1 - P2
+get_branches_imp_coef_mat = function(year)
+{
+  # fetch data
+  eurostat_data = get_eurostat(
+    "env_ac_mfa",
+    time_format = "num",
+    filters = list(geo=c("FR","EU27_2020"), indic_env="DE", unit="THS_T", time=year, material="TOTAL", nace_r2="TOTAL")
+  )
 
-    CPEB=get_branches_aggregates(Year)
+  fpt_fra =  eurostat_data$values[eurostat_data$geo=="FR"]
+  fpt_euu =  eurostat_data$values[eurostat_data$geo=="EU27_2020"]
 
-    RawMAT=get_eurostat("env_ac_mfa")
-    RawMAT=RawMAT[RawMAT$unit=="THS_T" & RawMAT$time==paste0(Year,"-01-01") & RawMAT$material %in% c("MF1","MF2","MF3","MF4","TOTAL") & RawMAT$geo %in% c("FR","EU27_2020"),]
-    FRAMAT=as.data.frame(ReferenceTable)
-    names(FRAMAT)="id"
-    FRAMAT$val[FRAMAT$id=="AZ"]=sum(RawMAT$values[RawMAT$geo=="FR" & RawMAT$material=="MF1" & RawMAT$indic_env=="DE"])*1000/CPEB$B1G[CPEB$CNA_ACTIVITE=="AZ"]
-    FRAMAT$val[FRAMAT$id=="BZ"]=sum(RawMAT$values[RawMAT$geo=="FR" & RawMAT$material %in% c("MF2","MF3","MF4") & RawMAT$indic_env=="DE"])*1000/CPEB$B1G[CPEB$CNA_ACTIVITE=="BZ"]
-    FRAMAT$val[is.na(FRAMAT$val)]=0
-
-    GDPEU27=get_eurostat("nama_10_a64")
-    GDPEU27=GDPEU27[GDPEU27$geo %in% c("EU27_2020","FR") & GDPEU27$na_item=="B1G" & GDPEU27$unit=="CP_MEUR" & GDPEU27$time==paste0(Year,"-01-01") & GDPEU27$nace_r2=="TOTAL",]
-
-    EUMAT27=(RawMAT$values[RawMAT$geo=="EU27_2020" & RawMAT$material=="TOTAL" & RawMAT$indic_env=="DE"]/GDPEU27$values[GDPEU27$geo=="EU27_2020"])/(RawMAT$values[RawMAT$geo=="FR" & RawMAT$material=="TOTAL" & RawMAT$indic_env=="DE"]/GDPEU27$values[GDPEU27$geo=="FR"])
-
-    Source="Insee and Eurostat"
-    Unit="G_CPEUR"
-    DataMAT=list(FRAMAT,EUMAT27,Source,Unit)
-    return(DataMAT)}}
+  branches_imp_coef = fpt_euu / fpt_fra
+  
+  return(branches_imp_coef)
+}

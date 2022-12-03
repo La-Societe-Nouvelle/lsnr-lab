@@ -226,7 +226,7 @@ get_ic_matrix = function(year)
 get_cfc_matrix = function (year)
 {
   wd = getwd()
-  path=paste0(wd,"/temp/","InseeDataCFC_",year,".csv")
+  path = paste0(wd,"/temp/","InseeDataCFC_",year,".csv")
 
   if (!file.exists(path))
   {

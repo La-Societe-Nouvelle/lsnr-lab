@@ -68,7 +68,7 @@ buildBranchesData = function(indicator, year)
   # Columns :
   #   - BRANCH
   #   - FOOTPRINT
-  #   - IMPORT COEF ( -> get from another way)
+  #   - GROSS_IMPACT
   
   nva_fpt = get_branches_nva_fpt(indicator,year)
 
@@ -270,7 +270,7 @@ update_ic_fpt = function(products_fpt, ic_matrix)
   next_fpt = c(0)
   for(i in 1:nrow(products_fpt)) {
     branch = products_fpt$PRODUCT[i]
-    next_fpt[i] = sum(ic_matrix[,branch] * products_fpt$TRESS_FPT)
+    next_fpt[i] = sum(ic_matrix[,branch] * products_fpt$TRESS_FPT) # to check
   }
   return(next_fpt)
 }

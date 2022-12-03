@@ -12,30 +12,35 @@
 #' @examples
 #' BuildECOData(max(FetchDataDisponibility("ECO"))
 #' @export
-BuildECOData=function(Year){
 
-  EcoDisponibility=FetchDataDisponibility("ECO")
-  if((Year %in% EcoDisponibility)==F){
-    return("Desired year is unavailable. Please, refer to FetchDataDisponibility function in order to find available years for a given indicator")
+source('R/InseeDataManager.R')
+
+build_branches_nva_fpt_eco = function(year) 
+{
+  # get branches aggregates
+  branches_aggregates = get_branches_aggregates(year)
+
+  # build nva footprint dataframe
+
+  nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
+  colnames(nva_fpt_data) = c("BRANCH", "NVA")
+
+  for(i in 1:nrow(nva_fpt_data))
+  {
+    # get sector
+    branch = nva_fpt_data$BRANCH[i]
+    
+    # build values
+    nva_fpt_data$GROSS_IMPACT[i] = branches_aggregates$NVA[i]
+    nva_fpt_data$FOOTPRINT[i] = 100.0
+    nva_fpt_data$UNIT_FOOTPRINT[i] = "P100"
   }
-  else{
 
-    ##Build ERE Database
-    ERE=get_products_aggregates(Year)
-    ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
+  return(nva_fpt_data)
+}
 
-    ##Build CPEB Database : P1 - P2
-
-    CPEB=get_branches_aggregates(Year)
-
-    ECOFR=as.data.frame(ReferenceTable)
-     names(ECOFR)="id"
-     for(i in 1:nrow(ECOFR)){
-       ECOFR$val[i]=100
-       #ECOFR$val[i]=(CPEB$B1G[CPEB$CNA_ACTIVITE==ECOFR$id[i]])/CPEB$P1[CPEB$CNA_ACTIVITE==ECOFR$id[i]] ##Si on part d'un ECO B1G = B1G/P1
-    }
-    ECOIMP=0
-    Source="Insee"
-    Unit="P100"
-ECOData=list(ECOFR,ECOIMP,Source,Unit)
-return(ECOData)}}
+get_branches_imp_coef_eco = function(year)
+{
+  branches_imp_coef = 0
+  return(branches_imp_coef)
+}

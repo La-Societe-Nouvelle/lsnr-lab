@@ -17,18 +17,18 @@ get_branches_nva_fpt = function(indic,year)
   # Init financial data
 
   data = switch(indic,
-    "art"= buildARTData(year),
-    "dis"= buildDISData(year),
-    "eco"= buildECOData(year),
-    "geq"= buildGEQData(year),
-    "ghg"= buildGHGData(year),
-    "haz"= buildHAZData(year),
-    "knw"= buildKNWData(year),
-    "mat"= buildMATData(year),
-    "nrg"= buildNRGData(year),
-    "soc"= buildSOCData(year),
-    "was"= buildWASData(year),
-    "wat"= buildWATData(year)
+    "art" = build_branches_nva_fpt_art(year),
+    "dis" = build_branches_nva_fpt_dis()(year),
+    "eco" = build_branches_nva_fpt_eco()(year),
+    "geq" = buildGEQData(year),
+    "ghg" = buildGHGData(year),
+    "haz" = buildHAZData(year),
+    "knw" = buildKNWData(year),
+    "mat" = buildMATData(year),
+    "nrg" = buildNRGData(year),
+    "soc" = buildSOCData(year),
+    "was" = buildWASData(year),
+    "wat" = buildWATData(year)
   )
 }
 
@@ -37,6 +37,8 @@ get_branches_imp_coef = function(indic,year)
   # Init financial data
 
   data = switch(indic,
-    "art"= get_branches_imp_coef_art(year)
+    "art" = get_branches_imp_coef_art(year),
+    "dis" = get_branches_imp_coef_dis(year),
+    "eco" = get_branches_imp_coef_eco(year)
   )
 }

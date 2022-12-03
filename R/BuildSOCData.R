@@ -12,37 +12,36 @@
 #' @examples
 #' BuildSOCData(max(FetchDataDisponibility("SOC"))
 #' @export
-BuildSOCData=function(Year){
-  SOCDisponibility=FetchDataDisponibility("SOC")
-  if((Year %in% SOCDisponibility)==F){
-    return("Desired year is unavailable. Please, refer to FetchDataDisponibility function in order to find available years for a given indicator")
-  }else{
-    ##Build ERE Database
-    ERE=get_products_aggregates(Year)
-    ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
 
-    ##Build CPEB Database : P1 - P2
+source('R/InseeDataManager.R')
 
-    CPEB=get_branches_aggregates(Year)
+build_branches_nva_fpt_soc = function(year) 
+{
+  # get branches aggregates
+  branches_aggregates = get_branches_aggregates(year)
 
-    SOCFRA=as.data.frame(ReferenceTable)
-    names(SOCFRA)="id"
-    ESS=as.data.frame(cbind(c(0.045,0.007,0.043,rep(0.007,15),0.019,0.006,0.026,0.013,0.013,0.013,0.0299,0.006,0.006,0.006,0.006,0.057,0.105,0.187,0.117,0.604,0.403519,0.006,0.006),ReferenceTable[order(ReferenceTable),1]))
-    for(i in 1:nrow(ESS)){
-      ESS$EmploiVA[i]=as.numeric(ESS[i,1])*CPEB$B1G[CPEB$CNA_ACTIVITE==ESS[i,2]]
-    }
-    for(i in 1:nrow(ESS)){
-      ESS$partva[i]=as.numeric(ESS$EmploiVA[i])/sum(as.numeric(ESS$EmploiVA))
-    }
-    for(i in 1:nrow(SOCFRA)){
-      SOCFRA$val[i]=100*as.numeric(ESS[ESS[,2]==SOCFRA$id[i],1])
-    }
+  # fetch data
+  wd = getwd()
+  ess_data = read.csv(paste0(wd,"/datasets/","SOC_DATA.csv"), header=T, sep=";")
 
-    #for(i in 1:nrow(SOCFRA)){
-    #  SOCFRA$val[i]=(100000*(CPEB$B1G[CPEB$CNA_ACTIVITE==SOCFRA$id[i]])/sum(CPEB$B1G))/CPEB$P1[CPEB$CNA_ACTIVITE==SOCFRA$id[i]]
-    #}
-    SOCIMP=0
-    Source="Insee and 2020 commented Atlas of Social Solidarity Economy"
-    Unite="P100"
-    DataSOC=list(SOCFRA,SOCIMP,Source,Unite)
-    return(DataSOC)}}
+  # build nva footprint dataframe
+
+  nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
+  colnames(nva_fpt_data) = c("BRANCH", "NVA")
+
+  for(i in 1:nrow(nva_fpt_data))
+  {    
+    # build values
+    nva_fpt_data$GROSS_IMPACT[i] = ess_data$FOOTPRINT[i] * branches_aggregates$NVA[i]
+    nva_fpt_data$FOOTPRINT[i] = ess_data$FOOTPRINT[i]
+    nva_fpt_data$UNIT_FOOTPRINT[i] = ess_data$UNIT_FOOTPRINT[i]
+  }
+
+  return(nva_fpt_data)
+}
+
+get_branches_imp_coef_soc = function(year)
+{
+  branches_imp_coef = 0
+  return(branches_imp_coef)
+}
