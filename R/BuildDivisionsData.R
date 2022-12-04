@@ -84,3 +84,40 @@ BuildDivisionsData=function(Indicator,Year){
     names(output)[1:6]=c("division",paste0(names(output)[2:6],"_",Indicator))
     return(output)
   }
+
+build_divisions_fpt = function(indicator,year)
+{
+  wd = getwd()
+  path = paste0(wd,"/lib/","Divisions.csv")
+
+  divisions = read.csv(path, header=T, sep=";")
+
+  # 
+  # divisions_aggregates = get_divisions_aggregates(year)
+
+  # build branches data
+  fpt_branches = buildBranchesData(toupper(Indicator), year)
+
+  # get nva data
+  nva_fpt = get_divisions_nva_fpt(indicator,year)
+
+  # divisions fpt
+  fpt_divisions = get_empty_divisions_fpt(divisions)
+
+  for(i in 1:nrow(fpt_divisions)) 
+  {
+    fpt_divisions$NVA_FPT[i] = nva_fpt$FOOTPRINT[i]
+    fpt_divisions$IC_FPT[i]  = fpt_branches$IC_FPT[i]
+    fpt_divisions$PRD_FPT[i] = (nva_fpt$FOOTPRINT[i]*divisions_aggregates$NVA[i] + fpt_branches$IC_FPT[i]*divisions_aggregates$IC[i] + fpt_divisions$CFC_FPT[i]*divisions_aggregates$CFC[i]) / divisions_aggregates$PRD[i]
+  }
+
+  return(fpt_divisions)
+}
+
+get_empty_divisions_fpt = function(divisions)
+{
+  fpt_divisions = as.data.frame(divisions$CODE)
+  names(fpt_divisions)="DIV"
+  fpt_divisions[,c('NVA_FPT','IC_FPT','CFC_FPT','PRD_FPT')] = c(0,0,0,0)
+  return(fpt_divisions)
+}
