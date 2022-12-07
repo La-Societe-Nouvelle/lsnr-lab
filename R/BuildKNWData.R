@@ -18,10 +18,12 @@ source('R/InseeDataManager.R')
 
 build_branches_nva_fpt_knw = function(year) 
 {
-  # get branches aggregates
+  # get branches aggregates -------------------------- #
+
   branches_aggregates = get_branches_aggregates(year)
 
-  # get eurostat data
+  # fetch data --------------------------------------- #
+  
   eurostat_data = get_eurostat(
     "trng_cvt_16n2",
     time_format = "num",
@@ -30,9 +32,10 @@ build_branches_nva_fpt_knw = function(year)
 
   trng_cvt_data = eurostat_data
 
-  # sector fpt
+  # sector fpt --------------------------------------- #
 
   sector_fpt_list = list()
+
   sector_fpt_list[["TOTAL"]]  = trng_cvt_data$values[trng_cvt_data$nace_r2=="TOTAL"]
   sector_fpt_list[["B-E"]]    = trng_cvt_data$values[trng_cvt_data$nace_r2=="B-E"]
   sector_fpt_list[["F"]]      = trng_cvt_data$values[trng_cvt_data$nace_r2=="F"]
@@ -44,7 +47,7 @@ build_branches_nva_fpt_knw = function(year)
   colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
   print(sector_fpt)
 
-  # build nva fpt dataframe
+  # build nva fpt dataframe -------------------------- #
 
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
@@ -65,6 +68,7 @@ build_branches_nva_fpt_knw = function(year)
   }
 
   return(nva_fpt_data)
+  # -------------------------------------------------- #
 }
 
 get_branches_imp_coef_knw = function(year)

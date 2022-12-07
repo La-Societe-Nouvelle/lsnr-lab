@@ -17,14 +17,16 @@ source('R/InseeDataManager.R')
 
 build_branches_nva_fpt_soc = function(year) 
 {
-  # get branches aggregates
+  # get branches aggregates -------------------------- #
+
   branches_aggregates = get_branches_aggregates(year)
 
-  # fetch data
+  # fetch data --------------------------------------- #
+
   wd = getwd()
   ess_data = read.csv(paste0(wd,"/datasets/","SOC_DATA.csv"), header=T, sep=";")
 
-  # build nva footprint dataframe
+  # build nva fpt dataframe -------------------------- #
 
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
@@ -38,6 +40,7 @@ build_branches_nva_fpt_soc = function(year)
   }
 
   return(nva_fpt_data)
+  # -------------------------------------------------- #
 }
 
 get_branches_imp_coef_soc = function(year)

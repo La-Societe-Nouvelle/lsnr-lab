@@ -19,10 +19,12 @@ source('R/InseeDataManager.R')
 
 build_branches_nva_fpt_wat = function(year) 
 {
-  # get branches aggregates
+  # get branches aggregates -------------------------- #
+
   branches_aggregates = get_branches_aggregates(year)
 
-  # fetch data
+  # fetch data --------------------------------------- #
+
   eurostat_data = get_eurostat(
     "env_wat_abs",
     time_format = "num",
@@ -32,7 +34,8 @@ build_branches_nva_fpt_wat = function(year)
   wat_abs_data = eurostat_data %>%
       pivot_wider(names_from = wat_proc, values_from = values)
 
-  # raw fpt
+  # raw fpt ------------------------------------------ #
+
   raw_fpt = list()
   raw_fpt$AGR_FPT = wat_abs_data$ABS_AGR[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "AZ"]
   raw_fpt$MIN_FPT = wat_abs_data$ABS_MIN[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "BZ"]
@@ -41,8 +44,10 @@ build_branches_nva_fpt_wat = function(year)
   raw_fpt$CON_FPT = wat_abs_data$ABS_CON[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "FZ"]
   raw_fpt$SER_FPT = wat_abs_data$ABS_SER[1]*1000 / sum(branches_aggregates$NVA[branches_aggregates$BRANCH %in% c("GZ","HZ","IZ","JA","JB","JC","KZ","LZ","MA","MB","MC","NZ","OZ","PZ","QA","QB","RZ","SZ","TZ")])
   
-  # sector fpt
+  # sector fpt --------------------------------------- #
+
   sector_fpt_list = list()
+  
   sector_fpt_list[["A"]]    = raw_fpt$AGR_FPT
   sector_fpt_list[["B"]]    = raw_fpt$MIN_FPT
   sector_fpt_list[["C-E"]]  = raw_fpt$IND_FPT
@@ -54,7 +59,7 @@ build_branches_nva_fpt_wat = function(year)
   colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
   print(sector_fpt)
 
-  # build nva footprint dataframe
+  # build nva fpt dataframe -------------------------- #
 
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
@@ -75,6 +80,7 @@ build_branches_nva_fpt_wat = function(year)
   }
 
   return(nva_fpt_data)
+  # -------------------------------------------------- #
 }
 
 get_branches_imp_coef_wat = function(year)

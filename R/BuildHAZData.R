@@ -15,45 +15,13 @@
 
 source('R/InseeDataManager.R')
 
-BuildHAZData=function(Year){
-
-  HAZDisponibility=FetchDataDisponibility("HAZ")
-  if((Year %in% HAZDisponibility)==F){
-    return("Desired year is unavailable. Please, refer to FetchDataDisponibility function in order to find available years for a given indicator")
-  }
-  else{
-
-    ##Build ERE Database
-    ERE=get_products_aggregates(Year)
-    ReferenceTable=as.data.frame(unique(ERE$CNA_PRODUIT))
-
-    ##Build CPEB Database : P1 - P2
-
-    CPEB=get_branches_aggregates(Year)
-
-    RawHAZ=get_eurostat("env_chmhaz", time_format = "date", filters = list(hazard = "HAZ", time = Year, indic_env ="CONS"))
-    GDPEU27=get_eurostat("nama_10_a64")
-    GDPEU27=GDPEU27[GDPEU27$geo %in% c("EU27_2020","FR") & GDPEU27$na_item=="B1G" & GDPEU27$unit=="CP_MEUR" & GDPEU27$time==paste0(Year,"-01-01") & GDPEU27$nace_r2=="TOTAL",]
-
-    FRAHAZ=as.data.frame(ReferenceTable)
-    names(FRAHAZ)="id"
-    for(i in 1:nrow(FRAHAZ)){
-      FRAHAZ$val[i]=RawHAZ$values[RawHAZ$geo=="EU27_2020"]*1000000/GDPEU27$values[GDPEU27$geo=="EU27_2020"]
-    }
-
-    EU27HAZ=(RawHAZ$values[RawHAZ$geo=="EU27_2020"]*1000000/GDPEU27$values[GDPEU27$geo=="EU27_2020"])/(RawHAZ$values[RawHAZ$geo=="EU27_2020"]*1000000/GDPEU27$values[GDPEU27$geo=="EU27_2020"])
-
-    Source="Insee and Eurostat"
-    Unit="G_CPEUR"
-    DataHAZ=list(FRAHAZ,EU27HAZ,Source,Unit)
-    return(DataHAZ)}}
-
 build_branches_nva_fpt_haz = function(year) 
 {
-  # get branches aggregates
+  # get branches aggregates -------------------------- #
+
   branches_aggregates = get_branches_aggregates(year)
 
-  # fetch data
+  # fetch data --------------------------------------- #
   
   eurostat_env_chmhaz_data = get_eurostat(
     "env_chmhaz",
@@ -70,19 +38,17 @@ build_branches_nva_fpt_haz = function(year)
   
   nama_data = eurostat_nama_data
 
-  # sector fpt
-
-  wd = getwd()
-  branches = read.csv(paste0(wd,"/lib/","Branches.csv"), header=T, sep=";")
+  # sector fpt --------------------------------------- #
 
   sector_fpt_list = list()
+
   sector_fpt_list[["TOTAL"]] = env_chmhaz_data$values*1000000 / nama_data$values
 
   sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(sector_fpt_list))
   colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
   print(sector_fpt)
 
-  # build nva footprint dataframe
+  # build nva fpt dataframe -------------------------- #
 
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
@@ -103,6 +69,7 @@ build_branches_nva_fpt_haz = function(year)
   }
 
   return(nva_fpt_data)
+  # -------------------------------------------------- #
 }
 
 get_branches_imp_coef_haz = function(year)

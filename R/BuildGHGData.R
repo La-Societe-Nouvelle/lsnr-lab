@@ -18,10 +18,16 @@ source('R/InseeDataManager.R')
 
 build_branches_nva_fpt_ghg = function(year) 
 {
-  # get branches aggregates
+  # -------------------------------------------------- #
+
+  wd = getwd()
+  branches = read.csv(paste0(wd,"/lib/","Branches.csv"), header=T, sep=";")
+ 
+  # get branches aggregates -------------------------- #
+
   branches_aggregates = get_branches_aggregates(year)
 
-  # fetch data
+  # fetch data --------------------------------------- #
   
   set1=c("A","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31_C32","C33","D","E","F","G","H","I","J","J58","J59_J60","J61","J62_J63","K","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","O","P","Q","Q86","Q87_Q88","R")
   eurostat_data_1 = get_eurostat(
@@ -39,12 +45,10 @@ build_branches_nva_fpt_ghg = function(year)
 
   ac_ainah_data = rbind(eurostat_data_1,eurostat_data_2)
 
-  # sector fpt
-
-  wd = getwd()
-  branches = read.csv(paste0(wd,"/lib/","Branches.csv"), header=T, sep=";")
+  # sector fpt --------------------------------------- #
 
   sector_fpt_list = list()
+
   for (i in 1:nrow(branches)) {
     code_nace = branches$NACE_R2[i]
     if (code_nace %in% ac_ainah_data$nace_r2) {
@@ -71,9 +75,8 @@ build_branches_nva_fpt_ghg = function(year)
 
   sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(sector_fpt_list))
   colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
-  print(sector_fpt)
 
-  # build nva footprint dataframe
+  # build nva fpt dataframe -------------------------- #
 
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
@@ -94,6 +97,7 @@ build_branches_nva_fpt_ghg = function(year)
   }
 
   return(nva_fpt_data)
+  # -------------------------------------------------- #
 }
 
 get_branches_imp_coef_ghg = function(year)

@@ -17,10 +17,17 @@ source('R/InseeDataManager.R')
 
 build_branches_nva_fpt_was = function(year) 
 {
-  # get branches aggregates
+  # -------------------------------------------------- #
+
+  wd = getwd()
+  branches = read.csv(paste0(wd,"/lib/","Branches.csv"), header=T, sep=";")
+
+  # get branches aggregates -------------------------- #
+
   branches_aggregates = get_branches_aggregates(year)
 
-  # get mat data
+  # fetch data --------------------------------------- #
+
   eurostat_data = get_eurostat("env_wasgen")
 
   wasgen_data = eurostat_data %>%
@@ -30,12 +37,10 @@ build_branches_nva_fpt_was = function(year)
     filter(unit=="T") %>%
     filter(time == paste0(year,"-01-01"))
 
-  # sector fpt
-
-  wd = getwd()
-  branches = read.csv(paste0(wd,"/lib/","Branches.csv"), header=T, sep=";")
+  # sector fpt --------------------------------------- #
 
   sector_fpt_list = list()
+
   for (i in 1:nrow(branches)) {
     code_nace = branches$NACE_R2[i]
     if (code_nace %in% wasgen_data$nace_r2) {
@@ -58,12 +63,11 @@ build_branches_nva_fpt_was = function(year)
   colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
   print(sector_fpt)
 
-  # build nva fpt
+  # build nva fpt dataframe -------------------------- #
 
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
 
-  wd = getwd()
   branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixWAS.csv"), header=T, sep=";")
 
   for(i in 1:nrow(nva_fpt_data))
@@ -79,6 +83,7 @@ build_branches_nva_fpt_was = function(year)
   }
 
   return(nva_fpt_data)
+  # -------------------------------------------------- #
 }
 
 get_branches_imp_coef_was = function(year)

@@ -18,14 +18,15 @@ source('R/InseeDataManager.R')
 
 build_branches_nva_fpt_dis = function(year) 
 {
-  # get branches aggregates
+  # get branches aggregates -------------------------- #
+
   branches_aggregates = get_branches_aggregates(year)
 
-  # get eurostat data
+  # fetch data --------------------------------------- #
 
   eurostat_data = get_eurostat("ilc_di12", time_format = "date", filters = list(geo = c("FR"), time = Year))
   
-  # build nva footprint dataframe
+  # build nva fpt dataframe -------------------------- #
 
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
@@ -38,6 +39,7 @@ build_branches_nva_fpt_dis = function(year)
   }
 
   return(nva_fpt_data)
+  # -------------------------------------------------- #
 }
 
 get_branches_imp_coef_dis = function(year)

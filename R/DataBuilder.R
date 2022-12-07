@@ -18,17 +18,17 @@ get_branches_nva_fpt = function(indic,year)
 
   data = switch(indic,
     "art" = build_branches_nva_fpt_art(year),
-    "dis" = build_branches_nva_fpt_dis()(year),
-    "eco" = build_branches_nva_fpt_eco()(year),
-    "geq" = buildGEQData(year),
-    "ghg" = buildGHGData(year),
-    "haz" = buildHAZData(year),
-    "knw" = buildKNWData(year),
-    "mat" = buildMATData(year),
-    "nrg" = buildNRGData(year),
-    "soc" = buildSOCData(year),
-    "was" = buildWASData(year),
-    "wat" = buildWATData(year)
+    "dis" = build_branches_nva_fpt_dis(year),
+    "eco" = build_branches_nva_fpt_eco(year),
+    "geq" = build_branches_nva_fpt_geq(year),
+    "ghg" = build_branches_nva_fpt_ghg(year),
+    "haz" = build_branches_nva_fpt_haz(year),
+    "knw" = build_branches_nva_fpt_knw(year),
+    "mat" = build_branches_nva_fpt_mat(year),
+    "nrg" = build_branches_nva_fpt_nrg(year),
+    "soc" = build_branches_nva_fpt_soc(year),
+    "was" = build_branches_nva_fpt_was(year),
+    "wat" = build_branches_nva_fpt_wat(year)
   )
 }
 
