@@ -39,6 +39,15 @@ get_branches_imp_coef = function(indic,year)
   data = switch(indic,
     "art" = get_branches_imp_coef_art(year),
     "dis" = get_branches_imp_coef_dis(year),
-    "eco" = get_branches_imp_coef_eco(year)
+    "eco" = get_branches_imp_coef_eco(year),
+    "geq" = get_branches_imp_coef_eco(year),
+    "ghg" = get_branches_imp_coef_ghg(year),
+    "haz" = get_branches_imp_coef_haz(year),
+    "knw" = get_branches_imp_coef_knw(year),
+    "mat" = get_branches_imp_coef_mat(year),
+    "nrg" = get_branches_imp_coef_nrg(year),
+    "soc" = get_branches_imp_coef_soc(year),
+    "was" = get_branches_imp_coef_was(year),
+    "wat" = get_branches_imp_coef_wat(year)
   )
 }

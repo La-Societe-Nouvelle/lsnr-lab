@@ -23,18 +23,26 @@ build_branches_nva_fpt_haz = function(year)
 
   # fetch data --------------------------------------- #
   
-  eurostat_env_chmhaz_data = get_eurostat(
-    "env_chmhaz",
-    time_format = "date",
-    filters = list(geo="EU27_2020", time=year, indic_env="CONS", hazard="HAZ", unit="MIO_T")
-  )
+  tryCatch({
+    eurostat_env_chmhaz_data = get_eurostat(
+      "env_chmhaz",
+      time_format = "date",
+      filters = list(geo="EU27_2020", time=year, indic_env="CONS", hazard="HAZ", unit="MIO_T")
+    )
+  }, error = function(e) {
+    stop(paste0("Données eurostat indisponibles pour ",year," (table env_chmhaz)"))
+  })
 
   env_chmhaz_data = eurostat_env_chmhaz_data
 
-  eurostat_nama_data = get_eurostat(
-    "nama_10_a64",
-    filters = list(geo="EU27_2020", na_item="B1G", time=year, unit="CP_MEUR", nace_r2="TOTAL")
-  )
+  tryCatch({
+    eurostat_nama_data = get_eurostat(
+      "nama_10_a64",
+      filters = list(geo="EU27_2020", na_item="B1G", time=year, unit="CP_MEUR", nace_r2="TOTAL")
+    )
+  }, error = function(e) {
+    stop(paste0("Données eurostat indisponibles pour ",year," (table nama_10_a64)"))
+  })
   
   nama_data = eurostat_nama_data
 

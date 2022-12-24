@@ -371,8 +371,8 @@ get_transfers_matrix = function(year)
   }
   else
   {
-    tess = read.csv(path,header=T,sep=";")
+    tr_matrix = read.csv(path,header=T,sep=";")
   }
 
-  return(tess)
+  return(tr_matrix)
 }

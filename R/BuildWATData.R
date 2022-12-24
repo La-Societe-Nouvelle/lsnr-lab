@@ -25,11 +25,15 @@ build_branches_nva_fpt_wat = function(year)
 
   # fetch data --------------------------------------- #
 
-  eurostat_data = get_eurostat(
-    "env_wat_abs",
-    time_format = "num",
-    filters = list(geo = c("FR"), unit = "MIO_M3", time = year, wat_src = "FRW")
-  )
+  tryCatch({
+    eurostat_data = get_eurostat(
+      "env_wat_abs",
+      time_format = "num",
+      filters = list(geo = c("FR"), unit = "MIO_M3", time = year, wat_src = "FRW")
+    )
+  }, error = function(e) {
+    stop(paste0("Données eurostat indisponibles pour ",year," (table env_wat_abs)"))
+  })
 
   wat_abs_data = eurostat_data %>%
       pivot_wider(names_from = wat_proc, values_from = values)

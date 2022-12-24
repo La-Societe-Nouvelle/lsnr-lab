@@ -17,13 +17,19 @@ print(wd)
 
 #list.files()
 
-source("R/BuildGEQData.R")
+source("R/DataBuilder.R")
 source("R/BuildBranchesData.R")
 
 print("start")
 #test = buildBranchesData("art", 2015)
-test = build_branches_nva_fpt_geq("2018")
-print(test)
+tryCatch({
+  test = suppressWarnings(buildBranchesData("ghg","2018"))
+  print(test)
+}, warning = function(war) {
+  print(war$message)
+}, error = function(err) {
+  print(err$message)
+})
 
 
 # abs(difftime(file.info(path)$ctime,Sys.time(),units="days"))>7

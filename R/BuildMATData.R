@@ -24,7 +24,11 @@ build_branches_nva_fpt_mat = function(year)
 
   # fetch data --------------------------------------- #
 
-  eurostat_data = get_eurostat("env_ac_mfa")
+  tryCatch({
+    eurostat_data = get_eurostat("env_ac_mfa")
+  }, error = function(e) {
+    stop(paste0("Données eurostat indisponibles pour ",year," (table env_ac_mfa)"))
+  })
 
   ac_mfa_data = eurostat_data %>%
     filter(geo == "FR") %>%

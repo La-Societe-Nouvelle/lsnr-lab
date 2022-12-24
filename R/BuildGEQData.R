@@ -24,7 +24,11 @@ build_branches_nva_fpt_geq = function(year)
 
   # fetch data --------------------------------------- #
 
-  eurostat_data = get_eurostat("earn_ses_hourly")
+  tryCatch({
+    eurostat_data = get_eurostat("earn_ses_hourly")
+  }, error = function(e) {
+    stop(paste0("Données eurostat indisponibles pour ",year," (table earn_ses_hourly)"))
+  })
 
   ses_data = eurostat_data %>%
     filter(geo == "FR") %>%

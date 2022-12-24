@@ -28,7 +28,11 @@ build_branches_nva_fpt_was = function(year)
 
   # fetch data --------------------------------------- #
 
-  eurostat_data = get_eurostat("env_wasgen")
+  tryCatch({
+    eurostat_data = get_eurostat("env_wasgen")
+  }, error = function(e) {
+    stop(paste0("Données eurostat indisponibles pour ",year," (table env_wasgen)"))
+  })
 
   wasgen_data = eurostat_data %>%
     filter(geo=="FR") %>%

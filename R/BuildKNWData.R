@@ -21,14 +21,18 @@ build_branches_nva_fpt_knw = function(year)
   # get branches aggregates -------------------------- #
 
   branches_aggregates = get_branches_aggregates(year)
-
+  
   # fetch data --------------------------------------- #
   
-  eurostat_data = get_eurostat(
-    "trng_cvt_16n2",
-    time_format = "num",
-    filters = list(geo="FR", cost="TOTAL", time=year, unit="PC")
-  )
+  tryCatch({
+    eurostat_data = get_eurostat(
+      "trng_cvt_16n2",
+      time_format = "num",
+      filters = list(geo="FR", cost="TOTAL", time=year, unit="PC")
+    )
+  }, error = function(e) {
+    stop(paste0("Données eurostat indisponibles pour ",year," (table trng_cvt_16n2)"))
+  })
 
   trng_cvt_data = eurostat_data
 

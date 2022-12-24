@@ -21,21 +21,13 @@ source('R/DataBuilder.R')
 
 buildBranchesData = function(indicator, year)
 {
+  print(paste0("Start building data for indicator ",indicator," for year ",year))
 
   options(warn = -1)
 
-  Disponibility = FetchDataDisponibility(indicator)
-
-  if ((year %in% Disponibility)==F) {
-    Year1=year
-    Year=Disponibility[which.min(abs(Year1-Disponibility))]
-  } else {
-    Year1=year
-  }
-
   #Fetch all economic and financial raw data needed in order to complete computations process
 
-  print("---------- Load data ----------")
+  print("---------- Data loading ----------")
 
   print("Products aggregates...")
   products_aggregates = get_products_aggregates(year)
@@ -54,10 +46,10 @@ buildBranchesData = function(indicator, year)
   print("data loaded")
 
   print("Transfers matrix...")
-  tr_matrix = FetchDataTESS(year)
+  tr_matrix = get_transfers_matrix(year)
   print("data loaded")
 
-  print("---------- All data loaded ----------")
+  print("---------- Data loaded ----------")
 
   wd = getwd()
   path = paste0(wd,"/lib/","Branches.csv")
@@ -82,8 +74,8 @@ buildBranchesData = function(indicator, year)
 
   for(i in 1:nrow(branches)) 
   {
-    fpt_branches$NVA_FPT[i] = nva_fpt$FOOTPRINT[nva_fpt$CNA_ACTIVITE==fpt_branches$BRANCH[i]]
-    fpt_branches$PRD_FPT[i] = as.numeric(nva_fpt$FOOTPRINT[nva_fpt$CNA_ACTIVITE==fpt_branches$BRANCH[i]])
+    fpt_branches$NVA_FPT[i] = nva_fpt$FOOTPRINT[nva_fpt$BRANCH==fpt_branches$BRANCH[i]]
+    fpt_branches$PRD_FPT[i] = as.numeric(nva_fpt$FOOTPRINT[nva_fpt$BRANCH==fpt_branches$BRANCH[i]])
   }
   
   #La variation des stocks (P52) correspond à la valeur des entrées en stock diminuée de la valeur des sorties de stocks et des pertes courantes sur stocks.
@@ -91,20 +83,22 @@ buildBranchesData = function(indicator, year)
 
   #Product values deduction, taking inter-branch transfers into account.
 
-  nbIterations = 5
+  maxIterations = 10
+  nbIterations = 0
   results = c()
 
   append(results,fpt_branches)
 
   # First iteration process
 
-  prev_fpt_branches = fpt_branches;
-  prev_fpt_products = fpt_products;
-
   isResultsStables = F
-  while (!isResultsStables)
+  while (!isResultsStables && nbIterations<maxIterations)
   {
-    print(paste0('ITERATION N°',iteration))
+    nbIterations= nbIterations+1
+    print(paste0('ITERATION N°',nbIterations))
+
+    prev_fpt_branches = fpt_branches;
+    prev_fpt_products = fpt_products;
 
     fpt_branches = get_empty_branches_fpt(branches)
     fpt_products = get_empty_products_fpt(branches)
@@ -112,43 +106,36 @@ buildBranchesData = function(indicator, year)
     # ---------- UPDATE PRODUCTS FOOTPRINTS ----------
 
     # RESS
-    print('update RESS')
     next_ress_fpt = update_ress_fpt(prev_fpt_branches,tr_matrix)
     fpt_products$RESS_FPT = next_ress_fpt
 
     # IMP
-    print('update IMP')
     fpt_products$IMP_FPT = fpt_products$RESS_FPT
 
     # TRESS
-    print('update TRESS')
     next_tress_fpt = update_tress_fpt(fpt_products,products_aggregates)
     fpt_products$TRESS_FPT = next_tress_fpt
 
     # ---------- UPDATE BRANCHES FOOTPRINTS ----------
 
     # NVA
-    print('update NVA')
     next_nva_fpt = update_nva_fpt(prev_fpt_branches)
     fpt_branches$NVA_FPT = next_nva_fpt
 
     # IC
-    print('update IC')
     next_ic_fpt = update_ic_fpt(fpt_products,ic_matrix)
     fpt_branches$IC_FPT = next_ic_fpt
 
     # CFC
-    print('update CFC')
     next_cfc_fpt = update_cfc_fpt(fpt_products,ic_matrix)
     fpt_branches$CFC_FPT = next_cfc_fpt
 
     # PRD
-    print('update PRD')
     next_prd_fpt = update_prd_fpt(fpt_branches,branches_aggregates)
     fpt_branches$PRD_FPT = next_prd_fpt
-    print(fpt_branches)
+    #print(fpt_branches)
 
-    isResultsStables = checkResultsStables(prev_branches_fpt,branches_fpt)
+    isResultsStables = checkResultsStables(prev_fpt_branches,fpt_branches)
   }
 
   #Second iteration process
@@ -157,13 +144,16 @@ buildBranchesData = function(indicator, year)
   next_imp_fpt = update_imp_fpt(fpt_products,imp_coef)
   fpt_products$IMP_FPT = next_imp_fpt
 
-  prev_fpt_branches = fpt_branches;
-  prev_fpt_products = fpt_products;
-
   isResultsStables = F
-  while (!isResultsStables)
+  nbIterations = 0
+
+  while (!isResultsStables && nbIterations<maxIterations)
   {
-    print(paste0('ITERATION N°',iteration))
+    nbIterations = nbIterations+1
+    print(paste0('ITERATION N°',nbIterations))
+
+    prev_fpt_branches = fpt_branches;
+    prev_fpt_products = fpt_products;
 
     fpt_branches = get_empty_branches_fpt(branches)
     fpt_products = get_empty_products_fpt(branches)
@@ -171,56 +161,59 @@ buildBranchesData = function(indicator, year)
     # ---------- UPDATE PRODUCTS FOOTPRINTS ----------
 
     # RESS
-    print('update RESS')
     next_ress_fpt = update_ress_fpt(prev_fpt_branches,tr_matrix)
     fpt_products$RESS_FPT = next_ress_fpt
 
     # IMP
-    print('update IMP')
     fpt_products$IMP_FPT = prev_fpt_products$IMP_FPT
 
     # TRESS
-    print('update TRESS')
     next_tress_fpt = update_tress_fpt(fpt_products,products_aggregates)
     fpt_products$TRESS_FPT = next_tress_fpt
 
     # ---------- UPDATE BRANCHES FOOTPRINTS ----------
 
     # NVA
-    print('update NVA')
     next_nva_fpt = update_nva_fpt(prev_fpt_branches)
     fpt_branches$NVA_FPT = next_nva_fpt
 
     # IC
-    print('update IC')
     next_ic_fpt = update_ic_fpt(fpt_products,ic_matrix)
     fpt_branches$IC_FPT = next_ic_fpt
 
     # CFC
-    print('update CFC')
     next_cfc_fpt = update_cfc_fpt(fpt_products,ic_matrix)
     fpt_branches$CFC_FPT = next_cfc_fpt
 
     # PRD
-    print('update PRD')
     next_prd_fpt = update_prd_fpt(fpt_branches,branches_aggregates)
     fpt_branches$PRD_FPT = next_prd_fpt
-    print(fpt_branches)
+    #print(fpt_branches)
 
-    isResultsStables = checkResultsStables(prev_branches_fpt,branches_fpt)
+    isResultsStables = checkResultsStables(prev_fpt_branches,fpt_branches)
   }
 
-  names(branchesData)[c(6,(ncol(branchesData)-3):(ncol(branchesData)))]=paste0(c("GVA","TRESS","IC","CFC","PRD"),"_",indicator)
-  names(branchesData)[names(branchesData)=="id"]="branch"
+  # Output -> concat branches / products fpt & apply deflation (x)
 
-  output=cbind(branchesData[order(branchesData$branch),c(1,6,(ncol(branchesData)-3):(ncol(branchesData)))],rep(nva_fpt[[1]][[3]],37),rep(nva_fpt[[1]][[4]],37))
-  names(output)[(ncol(output)-1):(ncol(output))]=c("Source","Unit")
-  if(indicator%in%c("GHG","HAZ","MAT","NRG","WAS","WAT")){ #If the unit is monetary intensity, then corrections apply
-    for(c in 2:6){
-      for(r in 1:nrow(output)){
-        output[r,c]=output[r,c]/(Deflator(1,Year1,year))
-      }
-    }}
+  output = fpt_branches
+  for (i in 1:nrow(branches)) 
+  {
+    output$RESS_FPT[i] = fpt_products$RESS_FPT[i]
+    output$IMP_FPT[i] = fpt_products$IMP_FPT[i]
+    output$TRESS_FPT[i] = fpt_products$TRESS_FPT[i]
+  }
+
+  # names(branchesData)[c(6,(ncol(branchesData)-3):(ncol(branchesData)))]=paste0(c("GVA","TRESS","IC","CFC","PRD"),"_",indicator)
+  # names(branchesData)[names(branchesData)=="id"]="branch"
+
+  # output=cbind(branchesData[order(branchesData$branch),c(1,6,(ncol(branchesData)-3):(ncol(branchesData)))],rep(nva_fpt[[1]][[3]],37),rep(nva_fpt[[1]][[4]],37))
+  # names(output)[(ncol(output)-1):(ncol(output))]=c("Source","Unit")
+  # if(indicator%in%c("GHG","HAZ","MAT","NRG","WAS","WAT")){ #If the unit is monetary intensity, then corrections apply
+  #   for(c in 2:6){
+  #     for(r in 1:nrow(output)){
+  #       output[r,c]=output[r,c]/(Deflator(1,Year1,year))
+  #     }
+  #   }}
 
   return(output)
 }
@@ -237,30 +230,30 @@ update_nva_fpt = function(prev_branches_fpt)
   return(next_fpt)
 }
 
-update_ress_fpt = function(prev_branches_fpt,data_TESS)
+update_ress_fpt = function(prev_branches_fpt,tr_matrix)
 {
   next_fpt = c(0)
   for (i in 1:nrow(prev_branches_fpt)) {
     branch = prev_branches_fpt$BRANCH[i]
-    next_fpt[i] = sum(data_TESS[i,-1] * prev_branches_fpt$PRD_FPT)
+    next_fpt[i] = sum(tr_matrix[,branch] * prev_branches_fpt$PRD_FPT)
   }
   return(next_fpt)
 }
 
-update_imp_fpt = function(products_fpt,imp_coef)
+update_imp_fpt = function(fpt_products,imp_coef)
 {
   next_fpt = c(0)
-  for (i in 1:nrow(products_fpt)) {
-    next_fpt[i] = products_fpt$RESS_FPT[i]*imp_coef
+  for (i in 1:nrow(fpt_products)) {
+    next_fpt[i] = fpt_products$RESS_FPT[i]*imp_coef
   }
   return(next_fpt)
 }
 
-update_tress_fpt = function(products_fpt,data_ERE)
+update_tress_fpt = function(products_fpt,products_aggregates)
 {
   next_fpt = c(0)
   for (i in 1:nrow(products_fpt)) {
-    next_fpt[i] = (products_fpt$RESS_FPT[i]*data_ERE$P1[i] + products_fpt$IMP_FPT[i]*data_ERE$P7[i]) / data_ERE$TOTAL[i]
+    next_fpt[i] = (products_fpt$RESS_FPT[i]*products_aggregates$RESS[i] + products_fpt$IMP_FPT[i]*products_aggregates$IMP[i]) / products_aggregates$TRESS[i]
   }
   return(next_fpt)
 }
@@ -285,13 +278,13 @@ update_cfc_fpt = function(products_fpt, cfc_matrix)
   return(next_fpt)
 }
 
-update_prd_fpt = function(branches_fpt, branches_aggregates) 
+update_prd_fpt = function(fpt_branches, branches_aggregates) 
 {
   next_fpt = c(0)
-  for(i in 1:nrow(branches_fpt)) {
-    next_fpt[i] = (branches_fpt$NVA_FPT[i]*branches_aggregates$NVA[i] 
-                 + branches_fpt$IC_FPT[i]*branches_aggregates$IC[i] 
-                 + branches_fpt$CFC_FPT[i]*branches_aggregates$CFC[i]) / branches_aggregates$PRD[i]
+  for(i in 1:nrow(fpt_branches)) {
+    next_fpt[i] = (fpt_branches$NVA_FPT[i]*branches_aggregates$NVA[i] 
+                 + fpt_branches$IC_FPT[i]*branches_aggregates$IC[i] 
+                 + fpt_branches$CFC_FPT[i]*branches_aggregates$CFC[i]) / branches_aggregates$PRD[i]
   }
   return(next_fpt)
 }
@@ -301,10 +294,20 @@ update_prd_fpt = function(branches_fpt, branches_aggregates)
 checkResultsStables = function(prev_branches_fpt,branches_fpt)
 {
   stable = T
-  for(i in 1:nrow(branches_fpt)) {
-    gap = abs(prev_branches_fpt$PRD_FPT[i]-branches_fpt$PRD_FPT[i]) >= branches_fpt$PRD_FPT[i]*0.1
-    if (gap) stable = F
+  max_gap = 0
+  for(i in 1:nrow(branches_fpt)) 
+  {
+    if (branches_fpt$PRD_FPT[i]>0) {
+      gap = abs(prev_branches_fpt$PRD_FPT[i]-branches_fpt$PRD_FPT[i]) / branches_fpt$PRD_FPT[i]
+    } else {
+      gap = 0
+    }
+    if (gap > max_gap) {
+      max_gap = gap
+    }
+    if (gap > 0.01) stable = F
   }
+  print(paste0("Variation maximale : ",round(max_gap*100,digits = 2)," %"))
   return(stable)
 }
 
