@@ -42,6 +42,32 @@ build_branches_nva_fpt_dis = function(year)
   # -------------------------------------------------- #
 }
 
+build_divisions_nva_fpt_dis = function(year) 
+{
+  # get divisions aggregates -------------------------- #
+
+  divisions_aggregates = get_divisions_aggregates(year)
+
+  # fetch data --------------------------------------- #
+
+  eurostat_data = get_eurostat("ilc_di12", time_format = "date", filters = list(geo = c("FR"), time = Year))
+  
+  # build nva fpt dataframe -------------------------- #
+
+  nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
+  colnames(nva_fpt_data) = c("DIVISION", "NVA")
+
+  for(i in 1:nrow(nva_fpt_data))
+  {
+    nva_fpt_data$GROSS_IMPACT[i] = eurostat_data$values[0]
+    nva_fpt_data$FOOTPRINT[i] = eurostat_data$values[0]
+    nva_fpt_data$UNIT_FOOTPRINT[i] = "I100"
+  }
+
+  return(nva_fpt_data)
+  # -------------------------------------------------- #
+}
+
 get_branches_imp_coef_dis = function(year)
 {
   # get dis data

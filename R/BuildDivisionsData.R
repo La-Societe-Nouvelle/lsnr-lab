@@ -14,24 +14,29 @@
 #' @examples
 #' BuildDivisionsDataV2("GHG",2018)
 #' @export
-BuildDivisionsData=function(Indicator,Year){
-  Disponibility=FetchDataDisponibility(Indicator)
-  if((Year %in% Disponibility)==F){
-    Year1=Year
-    Year=Disponibility[which.min(abs(Year1-Disponibility))]
-  }else{
-    Year1=Year}
+
+source('R/BuildBranchesData.R')
+
+BuildDivisionsData = function(indicator,year)
+{
+  print(paste0("Start building data for indicator ",indicator," for year ",year))
+
+  #Fetch all economic and financial raw data needed in order to complete computations process
+
+
+  #Fetch branches fpt
+  fpt_branches = buildBranchesData(indicator,year)
+
 
     #Call default values by 38 branches
-    BranchesData=buildBranchesData(toupper(Indicator),Year)
-    DivData=lapply(Year,paste0("Build",Indicator,"Data"))
+    BranchesData=buildBranchesData(toupper(indicator),year)
+    DivData=lapply(year,paste0("Build",indicator,"Data"))
     #Call production and business data by 88 branches
-    CPEBDivisionsDataRaw=get_insee_dataset("CNA-2014-CPEB",startPeriod = Year,endPeriod = Year,filter="A...VAL.....BRUT")
-    CPEBDivisionsDataRaw=CPEBDivisionsDataRaw[grepl("A88",CPEBDivisionsDataRaw$CNA_ACTIVITE),] %>% select(OBS_VALUE, CNA_ACTIVITE,OPERATION)
-    CPEBDivisionsDataRaw$CNA_ACTIVITE=str_remove(CPEBDivisionsDataRaw$CNA_ACTIVITE,"A88-")
-    CPEBDivisionsData=pivot_wider(CPEBDivisionsDataRaw,names_from = OPERATION,values_from = OBS_VALUE)
-    CCF=get_cfc_matrix(Year)
-    CPEBBranches=get_branches_aggregates(Year)
+
+    divisions_aggregates = get_divisions_aggregates(year)
+    cfc_matrix = get_cfc_matrix(year)
+    CCF=get_cfc_matrix(year)
+    CPEBBranches=get_branches_aggregates(year)
     for(i in 1:nrow(BranchesData)){BranchesData$TCCF[i]=ifelse(BranchesData$branch[i]%in%CCF$CNA_ACTIVITE,CCF$TOTAL[CCF$CNA_ACTIVITE==BranchesData$branch[i]]/CPEBBranches$B1G[CPEBBranches$CNA_ACTIVITE==BranchesData$branch[i]],0)}
 
     #Matching between 38 branches and 88 divisions
@@ -60,7 +65,7 @@ BuildDivisionsData=function(Indicator,Year){
     if(lengths(DivData)==5){
       for(i in 1:nrow(CPEBDivisionsData)){CPEBDivisionsData$NVA[i]=DivData[[1]][[5]][DivData[[1]][[5]][,1]==CPEBDivisionsData$CNA_ACTIVITE[i],2]} #when direct emissions are available by divisions, this line fetch and use it.
     }
-    if(Indicator%in%c("GHG","HAZ","MAT","NRG","WAS","WAT")){for(i in 1:nrow(CPEBDivisionsData)){CPEBDivisionsData$NVA[i]=CPEBDivisionsData$NVA[i]*CPEBDivisionsData$B1G[i]/CPEBDivisionsData$B1N[i]}}
+    if(indicator%in%c("GHG","HAZ","MAT","NRG","WAS","WAT")){for(i in 1:nrow(CPEBDivisionsData)){CPEBDivisionsData$NVA[i]=CPEBDivisionsData$NVA[i]*CPEBDivisionsData$B1G[i]/CPEBDivisionsData$B1N[i]}}
     nc=ncol(CPEBDivisionsData)+1
     for(i in 1:nrow(CPEBDivisionsData)){
       CPEBDivisionsData[i,nc]=(CPEBDivisionsData$B1N[i]*CPEBDivisionsData$NVA[i]+CPEBDivisionsData$NCCF[i]*CPEBDivisionsData$CCF[i]+CPEBDivisionsData$IC[i]*CPEBDivisionsData$P2[i])/(CPEBDivisionsData$P1[i])}
@@ -73,15 +78,15 @@ BuildDivisionsData=function(Indicator,Year){
         CPEBDivisionsData[j,i]=ifelse(is.na(CPEBDivisionsData[j,i]),0,CPEBDivisionsData[j,i])
       }
     }
-    if(Indicator%in%c("GHG","HAZ","MAT","NRG","WAS","WAT")){ #If the unit is monetary intensity, then corrections applu
+    if(indicator%in%c("GHG","HAZ","MAT","NRG","WAS","WAT")){ #If the unit is monetary intensity, then corrections applu
     for(c in c(14:17,20)){
       for(r in 1:nrow(CPEBDivisionsData)){
-        CPEBDivisionsData[r,c]=CPEBDivisionsData[r,c]/(Deflator(1,Year1,Year))
+        CPEBDivisionsData[r,c]=CPEBDivisionsData[r,c]/(Deflator(1,Year1,year))
       }
     }}
 
     output=CPEBDivisionsData[order(CPEBDivisionsData$CNA_ACTIVITE),c(1,14:17,20:22)]
-    names(output)[1:6]=c("division",paste0(names(output)[2:6],"_",Indicator))
+    names(output)[1:6]=c("division",paste0(names(output)[2:6],"_",indicator))
     return(output)
   }
 

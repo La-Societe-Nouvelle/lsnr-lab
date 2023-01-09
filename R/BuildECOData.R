@@ -41,6 +41,32 @@ build_branches_nva_fpt_eco = function(year)
   # -------------------------------------------------- #
 }
 
+build_divisions_nva_fpt_eco = function(year) 
+{
+  # get divisions aggregates -------------------------- #
+
+  divisions_aggregates = get_divisions_aggregates(year)
+
+  # build nva fpt dataframe -------------------------- #
+
+  nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
+  colnames(nva_fpt_data) = c("DIVISION", "NVA")
+
+  for(i in 1:nrow(nva_fpt_data))
+  {
+    # get sector
+    branch = nva_fpt_data$DIVISION[i]
+    
+    # build values
+    nva_fpt_data$GROSS_IMPACT[i] = divisions_aggregates$NVA[i]
+    nva_fpt_data$FOOTPRINT[i] = 100.0
+    nva_fpt_data$UNIT_FOOTPRINT[i] = "P100"
+  }
+
+  return(nva_fpt_data)
+  # -------------------------------------------------- #
+}
+
 get_branches_imp_coef_eco = function(year)
 {
   branches_imp_coef = 0

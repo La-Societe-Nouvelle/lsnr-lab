@@ -36,6 +36,27 @@ build_branches_nva_fpt_art = function(year)
   # -------------------------------------------------- #
 }
 
+build_divisions_nva_fpt_art = function(year) 
+{
+  # get divisions aggregates -------------------------- #
+
+  divisions_aggregates = get_divisions_aggregates(year)
+
+  # build nva fpt dataframe -------------------------- #
+
+  nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
+
+  for(i in 1:nrow(nva_fpt_data))
+  {
+    nva_fpt_data$GROSS_IMPACT[i] = round((as.numeric(nva_fpt_data[i,2]) / sum(as.numeric(nva_fpt_data[,2]))) * 111600, digits = 3)
+    nva_fpt_data$FOOTPRINT[i] = round(100*(111600 / sum(as.numeric(nva_fpt_data[,2]))), digits = 3)
+    nva_fpt_data$UNIT_FOOTPRINT[i] = "P100"
+  }
+
+  return(nva_fpt_data)
+  # -------------------------------------------------- #
+}
+
 get_branches_imp_coef_art = function(year)
 {
   branches_imp_coef = 0

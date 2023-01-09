@@ -25,9 +25,14 @@ buildBranchesData = function(indicator, year)
 
   options(warn = -1)
 
+  wd = getwd()
+  path = paste0(wd,"/lib/","Branches.csv")
+
+  branches = read.csv(path, header=T, sep=";")
+
   #Fetch all economic and financial raw data needed in order to complete computations process
 
-  print("---------- Data loading ----------")
+  print("---------- Financial data loading ----------")
 
   print("Products aggregates...")
   products_aggregates = get_products_aggregates(year)
@@ -49,12 +54,7 @@ buildBranchesData = function(indicator, year)
   tr_matrix = get_transfers_matrix(year)
   print("data loaded")
 
-  print("---------- Data loaded ----------")
-
-  wd = getwd()
-  path = paste0(wd,"/lib/","Branches.csv")
-
-  branches = read.csv(path, header=T, sep=";")
+  print("---------- Impacts data loading ----------")
 
   #Call indicator-specific data
   # Columns :

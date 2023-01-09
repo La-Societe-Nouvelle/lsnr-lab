@@ -170,6 +170,76 @@ get_branches_aggregates = function(year)
   return(branches_aggregates)
 }
 
+##########################################################################################################################
+################################################## DIVISIONS AGGREGATES ##################################################
+
+get_divisions_aggregates = function(year)
+{
+  wd = getwd()
+  path = paste0(wd,"/temp/","InseeDataCPEB-A88_",year,".csv")
+
+  if(!file.exists(path)) 
+  {
+    # fetch data (CPEB)
+    insee_cpeb_data = get_insee_dataset(
+      "CNA-2014-CPEB",
+      startPeriod = year,
+      endPeriod = year,
+      filter = "A...VAL.....BRUT"
+    )
+
+    cpeb_data = insee_cpeb_data %>%
+      filter(substr(CNA_ACTIVITE,1,3)=="A88") %>%
+      filter(OPERATION %in% c('P1','P2','B1G')) %>%
+      select(CNA_ACTIVITE, OPERATION, OBS_VALUE) %>%
+      pivot_wider(names_from = OPERATION, values_from = OBS_VALUE) %>%
+      mutate(CNA_ACTIVITE = str_remove(CNA_ACTIVITE,"A88-")) %>%
+      arrange(CNA_ACTIVITE)
+
+    # fetch data (PAT NAF)
+    insee_ccf_data = get_insee_dataset(
+      "CNA-2014-PAT-NF",
+      startPeriod = year,
+      endPeriod = year,
+      filter="A....VAL.AN11...CCF.."
+    )
+
+    ccf_data = insee_ccf_data %>%
+      filter(substr(CNA_ACTIVITE,1,3)=="A38") %>% 
+      select(CNA_ACTIVITE, OPERATION, OBS_VALUE) %>%
+      pivot_wider(names_from = OPERATION, values_from = OBS_VALUE) %>%
+      mutate(CNA_ACTIVITE = str_remove(CNA_ACTIVITE,"A38-")) %>%
+      arrange(CNA_ACTIVITE)
+
+    # Build branches aggregates frame
+    branches_aggregates = as.data.frame(cpeb_data$CNA_ACTIVITE)
+    names(branches_aggregates)=c("BRANCH")
+    for (i in 1:nrow(branches_aggregates)) 
+    {
+      branch = branches_aggregates$BRANCH[i]
+      branches_aggregates$PRD[i] = cpeb_data$P1[i]
+      branches_aggregates$IC[i]  = cpeb_data$P2[i]
+      branches_aggregates$CFC[i] = ccf_data$AN11[i]
+      branches_aggregates$NVA[i] = cpeb_data$B1G[i] - ccf_data$AN11[i]
+    }
+
+    # temp correction
+    branches_aggregates$IC[37] = 0
+    branches_aggregates$CFC[37] = 0
+    branches_aggregates$NVA[37] = 0
+
+    # Save in temp folder
+    file.create(path, showWarnings = FALSE)
+    write.table(branches_aggregates, path, sep=";", quote = T, row.names = F)
+  }
+  else 
+  {
+    branches_aggregates = read.csv(path,header=T,sep=";")
+  }
+
+  return(branches_aggregates)
+}
+
 ###############################################################################################################
 ################################################## IC MATRIX ##################################################
 
