@@ -35,28 +35,23 @@ buildBranchesData = function(indicator, year)
   print("---------- Financial data loading ----------")
 
   print("Products aggregates...")
-  products_aggregates = get_products_aggregates(year)
-  print("data loaded")
+  products_aggregates = suppressMessages(get_products_aggregates(year))
 
   print("Branches aggregates...")
-  branches_aggregates = get_branches_aggregates(year)
-  print("data loaded")
+  branches_aggregates = suppressMessages(get_branches_aggregates(year))
 
   print("Intermediates consumptions matrix...")
-  ic_matrix = get_ic_matrix(year)
-  print("data loaded")
+  ic_matrix = suppressMessages(get_ic_matrix(year))
 
   print("Consumptions of fixed capital matrix...")
-  cfc_matrix = get_cfc_matrix(year)
-  print("data loaded")
+  cfc_matrix = suppressMessages(get_cfc_matrix(year))
 
   print("Transfers matrix...")
-  tr_matrix = get_transfers_matrix(year)
-  print("data loaded")
+  tr_matrix = suppressMessages(get_transfers_matrix(year))
 
   print("---------- Impacts data loading ----------")
 
-  #Call indicator-specific data
+  # Call indicator-specific data
   # Columns :
   #   - BRANCH
   #   - FOOTPRINT
@@ -95,7 +90,6 @@ buildBranchesData = function(indicator, year)
   while (!isResultsStables && nbIterations<maxIterations)
   {
     nbIterations= nbIterations+1
-    print(paste0('ITERATION N°',nbIterations))
 
     prev_fpt_branches = fpt_branches;
     prev_fpt_products = fpt_products;
@@ -150,7 +144,6 @@ buildBranchesData = function(indicator, year)
   while (!isResultsStables && nbIterations<maxIterations)
   {
     nbIterations = nbIterations+1
-    print(paste0('ITERATION N°',nbIterations))
 
     prev_fpt_branches = fpt_branches;
     prev_fpt_products = fpt_products;
@@ -203,19 +196,17 @@ buildBranchesData = function(indicator, year)
     output$TRESS_FPT[i] = fpt_products$TRESS_FPT[i]
   }
 
-  # names(branchesData)[c(6,(ncol(branchesData)-3):(ncol(branchesData)))]=paste0(c("GVA","TRESS","IC","CFC","PRD"),"_",indicator)
-  # names(branchesData)[names(branchesData)=="id"]="branch"
+  output_2 = output %>% 
+    pivot_longer(!BRANCH, names_to = "AGGREGATE", values_to = "VALUE") %>%
+    mutate(AGGREGATE = str_remove(AGGREGATE,"_FPT"))
 
-  # output=cbind(branchesData[order(branchesData$branch),c(1,6,(ncol(branchesData)-3):(ncol(branchesData)))],rep(nva_fpt[[1]][[3]],37),rep(nva_fpt[[1]][[4]],37))
-  # names(output)[(ncol(output)-1):(ncol(output))]=c("Source","Unit")
-  # if(indicator%in%c("GHG","HAZ","MAT","NRG","WAS","WAT")){ #If the unit is monetary intensity, then corrections apply
-  #   for(c in 2:6){
-  #     for(r in 1:nrow(output)){
-  #       output[r,c]=output[r,c]/(Deflator(1,Year1,year))
-  #     }
-  #   }}
+  indic_metadata = read.csv(paste0(wd,"/lib/","IndicatorsMetadata.csv"), header=T, sep=";")
 
-  return(output)
+  output_2$YEAR = year
+  output_2$UNIT = indic_metadata$UNIT[indic_metadata$CODE==toupper(indicator)]
+  output_2$INDIC = toupper(indicator)
+
+  return(output_2)
 }
 
 #########################################################################################################################
@@ -307,7 +298,6 @@ checkResultsStables = function(prev_branches_fpt,branches_fpt)
     }
     if (gap > 0.01) stable = F
   }
-  print(paste0("Variation maximale : ",round(max_gap*100,digits = 2)," %"))
   return(stable)
 }
 
