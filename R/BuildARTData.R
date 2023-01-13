@@ -21,14 +21,25 @@ build_branches_nva_fpt_art = function(year)
 
   branches_aggregates = get_branches_aggregates(year)
 
+  # fetch data --------------------------------------- #
+
+  tryCatch({
+    res = GET("https://api.lasocietenouvelle.org/serie/MACRO_CRAFTEDNVA_DGE__FRA_CPMEUR")
+    dge_data = fromJSON(rawToChar(res$content))$data %>%
+      filter(dge_data$year == year)
+  }, error = function(e) {
+    stop(paste0("Données indisponibles pour ",year))
+  })
+
   # build nva fpt dataframe -------------------------- #
 
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
+  colnames(nva_fpt_data) = c("BRANCH", "NVA")
 
   for(i in 1:nrow(nva_fpt_data))
   {
-    nva_fpt_data$GROSS_IMPACT[i] = round((as.numeric(nva_fpt_data[i,2]) / sum(as.numeric(nva_fpt_data[,2]))) * 111600, digits = 3)
-    nva_fpt_data$FOOTPRINT[i] = round(100*(111600 / sum(as.numeric(nva_fpt_data[,2]))), digits = 3)
+    nva_fpt_data$GROSS_IMPACT[i] = round((as.numeric(nva_fpt_data[i,2]) / sum(as.numeric(nva_fpt_data[,2]))) * dge_data$value, digits = 3)
+    nva_fpt_data$FOOTPRINT[i] = round(100*(dge_data$value / sum(as.numeric(nva_fpt_data[,2]))), digits = 3)
     nva_fpt_data$UNIT_FOOTPRINT[i] = "P100"
   }
 
