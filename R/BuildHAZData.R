@@ -15,46 +15,56 @@
 
 source('R/InseeDataManager.R')
 
-build_branches_nva_fpt_haz = function(year) 
+build_branches_nva_fpt_haz = function(selectedYear) 
 {
   # get branches aggregates -------------------------- #
 
-  branches_aggregates = get_branches_aggregates(year)
+  branches_aggregates = get_branches_aggregates(selectedYear)
 
   # fetch data --------------------------------------- #
   
-  tryCatch({
-    eurostat_env_chmhaz_data = get_eurostat(
-      "env_chmhaz",
-      time_format = "date",
-      filters = list(geo="EU27_2020", time=year, indic_env="CONS", hazard="HAZ", unit="MIO_T")
-    )
-  }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",year," (table env_chmhaz)"))
-  })
-
-  env_chmhaz_data = eurostat_env_chmhaz_data
+  # fetch data --------------------------------------- #
 
   tryCatch({
-    eurostat_nama_data = get_eurostat(
-      "nama_10_a64",
-      filters = list(geo="EU27_2020", na_item="B1G", time=year, unit="CP_MEUR", nace_r2="TOTAL")
-    )
+    # prodcom data
+    res_prodqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_PRODQNT_PRODCOM_FRA_T")
+    res_impqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_IMPQNT_PRODCOM_FRA_T")
+    res_expqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_EXPQNT_PRODCOM_FRA_T")
+
+    data_prodqnt = fromJSON(rawToChar(res_prodqnt$content))$data %>% 
+      mutate(aggregate = "PRODQNT")
+    data_impqnt = fromJSON(rawToChar(res_impqnt$content))$data %>% 
+      mutate("aggregate" = "IMPQNT")
+    data_expqnt = fromJSON(rawToChar(res_expqnt$content))$data %>% 
+      mutate("aggregate" = "EXPQNT")
+    
+    prodcom_data = data_prodqnt %>%
+      rbind(data_impqnt) %>%
+      rbind(data_expqnt) %>%
+      filter(year == selectedYear) # control if empty
+
+    # tei data (reuse insee data set -> coef tech not usable)
+    reversed_ic_matrix = suppressMessages(get_reversed_ic_matrix(selectedYear)) %>%
+      filter(PRODUCT == "CE") %>%
+      pivot_longer(!PRODUCT, names_to = "BRANCH", values_to = "VALUE")
+    
   }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",year," (table nama_10_a64)"))
+    print(e)
+    stop(paste0("Données indisponibles pour ",selectedYear))
   })
-  
-  nama_data = eurostat_nama_data
+
+  print(prodcom_data);
+  print(reversed_ic_matrix);
 
   # sector fpt --------------------------------------- #
 
-  sector_fpt_list = list()
+  # sector_fpt_list = list()
 
-  sector_fpt_list[["TOTAL"]] = env_chmhaz_data$values*1000000 / nama_data$values
+  # sector_fpt_list[["TOTAL"]] = env_chmhaz_data$values*1000000 / nama_data$values
 
-  sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(sector_fpt_list))
-  colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
-  print(sector_fpt)
+  # sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(sector_fpt_list))
+  # colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
+  # print(sector_fpt)
 
   # build nva fpt dataframe -------------------------- #
 
@@ -64,17 +74,29 @@ build_branches_nva_fpt_haz = function(year)
   wd = getwd()
   branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixHAZ.csv"), header=T, sep=";")
 
+  haz_dmc_qnt = prodcom_data$value[prodcom_data$aggregate=="PRODQNT"] + prodcom_data$value[prodcom_data$aggregate=="IMPQNT"] - prodcom_data$value[prodcom_data$aggregate=="EXPQNT"]
+  print(haz_dmc_qnt)
+
   for(i in 1:nrow(nva_fpt_data))
   {
     # get sector
     branch = nva_fpt_data$BRANCH[i]
-    sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
+    # sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
+
+    # build values
+    nva_fpt_data$GROSS_IMPACT[i] = haz_dmc_qnt * reversed_ic_matrix$VALUE[reversed_ic_matrix$BRANCH==branch]
+    nva_fpt_data$UNIT_IMPACT[i] = "T"
+    nva_fpt_data$FOOTPRINT[i] = (haz_dmc_qnt * reversed_ic_matrix$VALUE[reversed_ic_matrix$BRANCH==branch]) / branches_aggregates$NVA[branches_aggregates$BRANCH==branch]
+    nva_fpt_data$UNIT_FOOTPRINT[i] = "G_CPEUR"
     
     # build values
-    nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector] * branches_aggregates$NVA[i]
-    nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
-    nva_fpt_data$UNIT_FOOTPRINT[i] = "G_CPEUR"
+    # nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector] * branches_aggregates$NVA[i]
+    # nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
+    # nva_fpt_data$UNIT_FOOTPRINT[i] = "G_CPEUR"
   }
+
+  # temp correction
+  nva_fpt_data$FOOTPRINT[37] = 0
 
   return(nva_fpt_data)
   # -------------------------------------------------- #
@@ -82,6 +104,6 @@ build_branches_nva_fpt_haz = function(year)
 
 get_branches_imp_coef_haz = function(year)
 {
-  branches_imp_coef = 1.0
+  branches_imp_coef = 3.0
   return(branches_imp_coef)
 }

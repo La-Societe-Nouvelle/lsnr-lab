@@ -236,6 +236,41 @@ get_ic_matrix = function(year)
   return(ic_matrix)
 }
 
+get_reversed_ic_matrix = function(year) 
+{
+
+  # fetch data
+  insee_tei_data = get_insee_dataset(
+    "CNA-2014-TEI",
+    startPeriod = year,
+    endPeriod = year
+  )
+
+  tei_data = insee_tei_data %>%
+    filter(substr(CNA_ACTIVITE,1,3)=="A38" | CNA_ACTIVITE == "NNTOTAL") %>% 
+    filter(substr(CNA_PRODUIT,1,3)=="A38" | CNA_PRODUIT == "NNTOTAL") %>% 
+    select(CNA_ACTIVITE, CNA_PRODUIT, OBS_VALUE) %>%
+    mutate(CNA_ACTIVITE = str_remove(CNA_ACTIVITE,"A38-")) %>%
+    mutate(CNA_PRODUIT = str_remove(CNA_PRODUIT,"A38-")) %>%
+    pivot_wider(names_from = CNA_ACTIVITE, values_from = OBS_VALUE) %>% # columns -> branches (i.e. rows -> products)
+    arrange(CNA_PRODUIT)
+
+  # build reversed ic matrix
+  ic_matrix = as.data.frame(tei_data[,1]) %>% filter(CNA_PRODUIT != "NNTOTAL")
+  for (j in 1:nrow(ic_matrix)) # column
+  {
+    branch = ic_matrix$CNA_PRODUIT[j] # use CNA_PRODUIT column for code
+    ic_matrix[,branch] = c(0)
+    for (i in 1:36) 
+    {
+      ic_matrix[i,branch] = tei_data[i,branch] / tei_data$NNTOTAL[i]
+    }
+  }
+  names(ic_matrix)[names(ic_matrix) == 'CNA_PRODUIT'] = 'PRODUCT'
+
+  return(ic_matrix)
+}
+
 ################################################################################################################
 ################################################## CFC MATRIX ##################################################
 

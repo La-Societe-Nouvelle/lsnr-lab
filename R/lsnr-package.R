@@ -23,7 +23,7 @@ source("R/BuildBranchesData.R")
 print("start")
 #test = buildBranchesData("art", 2015)
 tryCatch({
-  test = suppressWarnings(buildBranchesData("ghg","2018"))
+  test = suppressWarnings(buildBranchesData("haz","2017"))
   print(test)
 }, warning = function(war) {
   print(war$message)
