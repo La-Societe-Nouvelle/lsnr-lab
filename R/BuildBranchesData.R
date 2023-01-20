@@ -1,21 +1,23 @@
-#'Compute default values of societal footprints by NACE branches (38)
+#' Compute macroeconomic values of societal footprints by NACE branches (38)
 #'
-#'Unlike BuildBranchesData function, this derived model take into
-#'account fixed capital consumption.
+#' @details This function aims to compute French branch societal footprints by non-financial dimension by year.
+#' It involves, on one hand, a macroeconomic input-output modelization of the French economy and its interactions with
+#' the rest of the world, based on INSEE IOTs, and requires, on the other hand, direct impact data from institutional sources.
 #'
-#'This function returns a table summarizing final default values
-#'of the chosen indicator on the selected year.
 #'
-#' @param Year Considered year.
-#' @param Indicator Considered indicator.
+#' @param year year of requested data.
+#' @param indicator requested non-financial dimension.
 #'
-#' @return A `data.frame` object containing final default values by economic activities branches.
-#' @seealso \code{\link{BuildDivisionsData}}, \code{\link{FetchDataDisponibility}}, \code{\link{BuildBranchesData}}.
+#' @return A table of macroeconomic footprint values by economic activities branch.
+#'
+#' @seealso \code{\link{buildDivisionsData}}, \code{\link{getIndicatorList}}, \code{\link{buildDiscountedData}}.
+#'
 #' @examples
-#' BuildBranchesDataV2("GHG",2018)
+#' buildBranchesData("ECO",2019)
+#'
 #' @export
 
-source('R/FetchDataDisponibility.R')
+source('R/FetchDataAvailability.R')
 source('R/DataBuilder.R')
 
 
@@ -56,7 +58,7 @@ buildBranchesData = function(indicator, year)
   #   - BRANCH
   #   - FOOTPRINT
   #   - GROSS_IMPACT
-  
+
   nva_fpt = get_branches_nva_fpt(indicator,year)
 
   fpt_branches = get_empty_branches_fpt(branches)
@@ -67,12 +69,12 @@ buildBranchesData = function(indicator, year)
 
   print('init branches footprints')
 
-  for(i in 1:nrow(branches)) 
+  for(i in 1:nrow(branches))
   {
     fpt_branches$NVA_FPT[i] = nva_fpt$FOOTPRINT[nva_fpt$BRANCH==fpt_branches$BRANCH[i]]
     fpt_branches$PRD_FPT[i] = as.numeric(nva_fpt$FOOTPRINT[nva_fpt$BRANCH==fpt_branches$BRANCH[i]])
   }
-  
+
   #La variation des stocks (P52) correspond à la valeur des entrées en stock diminuée de la valeur des sorties de stocks et des pertes courantes sur stocks.
   #Les stocks comprennent les matières premières et fournitures, les travaux en cours, les biens finis et les biens destinés à la revente.
 
@@ -189,14 +191,14 @@ buildBranchesData = function(indicator, year)
   # Output -> concat branches / products fpt & apply deflation (x)
 
   output = fpt_branches
-  for (i in 1:nrow(branches)) 
+  for (i in 1:nrow(branches))
   {
     output$RESS_FPT[i] = fpt_products$RESS_FPT[i]
     output$IMP_FPT[i] = fpt_products$IMP_FPT[i]
     output$TRESS_FPT[i] = fpt_products$TRESS_FPT[i]
   }
 
-  output_2 = output %>% 
+  output_2 = output %>%
     pivot_longer(!BRANCH, names_to = "AGGREGATE", values_to = "VALUE") %>%
     mutate(AGGREGATE = str_remove(AGGREGATE,"_FPT"))
 
@@ -249,7 +251,7 @@ update_tress_fpt = function(products_fpt,products_aggregates)
   return(next_fpt)
 }
 
-update_ic_fpt = function(products_fpt, ic_matrix) 
+update_ic_fpt = function(products_fpt, ic_matrix)
 {
   next_fpt = c(0)
   for(i in 1:nrow(products_fpt)) {
@@ -259,7 +261,7 @@ update_ic_fpt = function(products_fpt, ic_matrix)
   return(next_fpt)
 }
 
-update_cfc_fpt = function(products_fpt, cfc_matrix) 
+update_cfc_fpt = function(products_fpt, cfc_matrix)
 {
   next_fpt = c(0)
   for(i in 1:nrow(products_fpt)) {
@@ -269,12 +271,12 @@ update_cfc_fpt = function(products_fpt, cfc_matrix)
   return(next_fpt)
 }
 
-update_prd_fpt = function(fpt_branches, branches_aggregates) 
+update_prd_fpt = function(fpt_branches, branches_aggregates)
 {
   next_fpt = c(0)
   for(i in 1:nrow(fpt_branches)) {
-    next_fpt[i] = (fpt_branches$NVA_FPT[i]*branches_aggregates$NVA[i] 
-                 + fpt_branches$IC_FPT[i]*branches_aggregates$IC[i] 
+    next_fpt[i] = (fpt_branches$NVA_FPT[i]*branches_aggregates$NVA[i]
+                 + fpt_branches$IC_FPT[i]*branches_aggregates$IC[i]
                  + fpt_branches$CFC_FPT[i]*branches_aggregates$CFC[i]) / branches_aggregates$PRD[i]
   }
   return(next_fpt)
@@ -286,7 +288,7 @@ checkResultsStables = function(prev_branches_fpt,branches_fpt)
 {
   stable = T
   max_gap = 0
-  for(i in 1:nrow(branches_fpt)) 
+  for(i in 1:nrow(branches_fpt))
   {
     if (branches_fpt$PRD_FPT[i]>0) {
       gap = abs(prev_branches_fpt$PRD_FPT[i]-branches_fpt$PRD_FPT[i]) / branches_fpt$PRD_FPT[i]

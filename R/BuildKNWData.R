@@ -9,21 +9,21 @@
 #' @return An object `list` made up of 4 elements : value added impacts by French branches,
 #' imported products associated coefficient, data sources and values unit.
 #' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataDisponibility}}.
+#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
-#' BuildKNWData(max(FetchDataDisponibility("KNW"))
+#' BuildKNWData(max(FetchDataAvailability("KNW"))
 #' @export
 
 source('R/InseeDataManager.R')
 
-build_branches_nva_fpt_knw = function(year) 
+build_branches_nva_fpt_knw = function(year)
 {
   # get branches aggregates -------------------------- #
 
   branches_aggregates = get_branches_aggregates(year)
-  
+
   # fetch data --------------------------------------- #
-  
+
   tryCatch({
     eurostat_data = get_eurostat(
       "trng_cvt_16n2",
@@ -64,7 +64,7 @@ build_branches_nva_fpt_knw = function(year)
     # get sector
     branch = nva_fpt_data$BRANCH[i]
     sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
-    
+
     # build values
     nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]/100 * branches_aggregates$NVA[i]
     nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
@@ -88,6 +88,6 @@ get_branches_imp_coef_knw = function(year)
   fpt_euu =  eurostat_data$values[eurostat_data$geo=="EU28"]
 
   branches_imp_coef = fpt_euu / fpt_fra
-  
+
   return(branches_imp_coef)
 }

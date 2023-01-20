@@ -9,14 +9,14 @@
 #' @return An object `list` made up of 4 elements : value added impacts by French branches,
 #' imported products associated coefficient, data sources and values unit.
 #' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataDisponibility}}.
+#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
-#' BuildDISData(max(FetchDataDisponibility("DIS"))
+#' BuildDISData(max(FetchDataAvailability("DIS"))
 #' @export
 
 source('R/InseeDataManager.R')
 
-build_branches_nva_fpt_dis = function(year) 
+build_branches_nva_fpt_dis = function(year)
 {
   # get branches aggregates -------------------------- #
 
@@ -25,7 +25,7 @@ build_branches_nva_fpt_dis = function(year)
   # fetch data --------------------------------------- #
 
   eurostat_data = get_eurostat("ilc_di12", time_format = "date", filters = list(geo = c("FR"), time = Year))
-  
+
   # build nva fpt dataframe -------------------------- #
 
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
@@ -42,7 +42,7 @@ build_branches_nva_fpt_dis = function(year)
   # -------------------------------------------------- #
 }
 
-build_divisions_nva_fpt_dis = function(year) 
+build_divisions_nva_fpt_dis = function(year)
 {
   # get divisions aggregates -------------------------- #
 
@@ -51,7 +51,7 @@ build_divisions_nva_fpt_dis = function(year)
   # fetch data --------------------------------------- #
 
   eurostat_data = get_eurostat("ilc_di12", time_format = "date", filters = list(geo = c("FR"), time = Year))
-  
+
   # build nva fpt dataframe -------------------------- #
 
   nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
