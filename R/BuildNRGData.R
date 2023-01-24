@@ -102,17 +102,23 @@ build_branches_nva_fpt_nrg = function(year)
   # -------------------------------------------------- #
 }
 
-get_branches_imp_coef_nrg = function(year)
+get_branches_imp_coef_nrg = function(selectedYear)
 {
   # fetch data
-  eurostat_data = get_eurostat(
+  eurostat_pefasu_data = get_eurostat(
     "env_ac_pefasu",
     time_format = "num",
-    filters = list(geo=c("FR","EU27_2020"), unit="TJ", time=year, stk_flow="SUP", prod_nrg="R30", nace_r2="TOTAL")
+    filters = list(geo=c("FR","EU27_2020"), unit="TJ", time=selectedYear, stk_flow="SUP", prod_nrg="R30", nace_r2="TOTAL")
   )
 
-  fpt_fra =  eurostat_data$values[eurostat_data$geo=="FR"]
-  fpt_euu =  eurostat_data$values[eurostat_data$geo=="EU27_2020"]
+  # domestic production
+  eurostat_nama_data = get_eurostat(
+    "nama_10_a64",
+    filters = list(geo=c("FR","EU27_2020"), na_item="B1G", time=selectedYear, unit="CP_MEUR", nace_r2="TOTAL")
+  )
+
+  fpt_fra =  eurostat_pefasu_data$values[eurostat_pefasu_data$geo=="FR"] / eurostat_nama_data$values[eurostat_nama_data$geo=="FR"]
+  fpt_euu =  eurostat_pefasu_data$values[eurostat_pefasu_data$geo=="EU27_2020"] / eurostat_nama_data$values[eurostat_nama_data$geo=="EU27_2020"]
 
   branches_imp_coef = fpt_euu / fpt_fra
   
