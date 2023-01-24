@@ -23,8 +23,14 @@ build_branches_nva_fpt_soc = function(year)
 
   # fetch data --------------------------------------- #
 
-  wd = getwd()
-  ess_data = read.csv(paste0(wd,"/datasets/","SOC_DATA.csv"), header=T, sep=";")
+  tryCatch({
+    # for loop to fetch data for each branch
+    res = GET("https://api.lasocietenouvelle.org/serie/SIRENE_ESS_LEGALUNITS_P100_FRA_BRANCH")
+    dge_data = fromJSON(rawToChar(res$content))$data %>%
+      filter(dge_data$year == year)
+  }, error = function(e) {
+    stop(paste0("Données indisponibles pour ",year))
+  })
 
   # build nva fpt dataframe -------------------------- #
 

@@ -102,8 +102,61 @@ build_branches_nva_fpt_haz = function(selectedYear)
   # -------------------------------------------------- #
 }
 
-get_branches_imp_coef_haz = function(year)
+get_branches_imp_coef_haz = function(selectedYear)
 {
-  branches_imp_coef = 3.0
+  # fetch data
+
+  # prodcom data - FRA
+  res_prodqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_PRODQNT_PRODCOM_FRA_T")
+  res_impqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_IMPQNT_PRODCOM_FRA_T")
+  res_expqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_EXPQNT_PRODCOM_FRA_T")
+
+  data_prodqnt_fra = fromJSON(rawToChar(res_prodqnt$content))$data %>% 
+    mutate(aggregate = "PRODQNT") %>%
+    mutate(area = "FRA")
+  data_impqnt_fra = fromJSON(rawToChar(res_impqnt$content))$data %>% 
+    mutate("aggregate" = "IMPQNT") %>%
+    mutate(area = "FRA")
+  data_expqnt_fra = fromJSON(rawToChar(res_expqnt$content))$data %>% 
+    mutate("aggregate" = "EXPQNT") %>%
+    mutate(area = "FRA")
+
+  # prodcom data - EUU
+  res_prodqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_PRODQNT_PRODCOM_EUU_T")
+  res_impqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_IMPQNT_PRODCOM_EUU_T")
+  res_expqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_EXPQNT_PRODCOM_EUU_T")
+
+  data_prodqnt_euu = fromJSON(rawToChar(res_prodqnt$content))$data %>% 
+    mutate(aggregate = "PRODQNT") %>%
+    mutate(area = "EUU")
+  data_impqnt_euu = fromJSON(rawToChar(res_impqnt$content))$data %>% 
+    mutate("aggregate" = "IMPQNT")%>%
+    mutate(area = "EUU")
+  data_expqnt_euu = fromJSON(rawToChar(res_expqnt$content))$data %>% 
+    mutate("aggregate" = "EXPQNT")%>%
+    mutate(area = "EUU")
+  
+  prodcom_data = data_prodqnt_fra %>%
+    rbind(data_impqnt_fra) %>%
+    rbind(data_expqnt_fra) %>%
+    rbind(data_prodqnt_euu) %>%
+    rbind(data_impqnt_euu) %>%
+    rbind(data_expqnt_euu) %>%
+    filter(year == selectedYear) # control if empty
+
+  # domestic production
+  eurostat_nama_data = get_eurostat(
+    "nama_10_a64",
+    filters = list(geo=c("FR","EU27_2020"), na_item="B1G", time=year, unit="CP_MEUR", nace_r2="TOTAL")
+  )
+
+  print(prodcom_data)
+  print(eurostat_nama_data)
+
+  fpt_fra =  wdi_data$EN.ATM.CO2E.KD.GD[wdi_data$iso2c=="FR"]
+  fpt_wld =  wdi_data$EN.ATM.CO2E.KD.GD[wdi_data$iso2c=="1W"]
+
+  branches_imp_coef = fpt_wld / fpt_fra
+  
   return(branches_imp_coef)
 }
