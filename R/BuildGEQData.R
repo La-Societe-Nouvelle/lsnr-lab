@@ -134,17 +134,20 @@ build_divisions_nva_fpt_geq = function(year)
   # -------------------------------------------------- #
 }
 
-get_branches_imp_coef_geq = function(year)
+get_branches_imp_coef_geq = function(selectedYear)
 {
   # fetch data
   eurostat_data = get_eurostat(
     "earn_ses_hourly",
     time_format = "num",
-    filters = list(geo=c("FR","EU28"), age="TOTAL", indic_se="MEAN_E_EUR", isco08="TOTAL", worktime="TOTAL", time=year, nace_r2="TOTAL")
+    filters = list(geo=c("FR","EU28"), age="TOTAL", indic_se="MEAN_E_EUR", isco08="TOTAL", worktime="TOTAL", time=selectedYear, nace_r2="B-S_X_O")
   )
 
-  fpt_fra =  eurostat_data$values[eurostat_data$geo=="FR"]
-  fpt_euu =  eurostat_data$values[eurostat_data$geo=="EU28"]
+  ses_data = eurostat_data %>% 
+    pivot_wider(names_from = sex, values_from = values)
+  
+  fpt_fra = abs(ses_data$F[ses_data$geo=="FR"] - ses_data$M[ses_data$geo=="FR"]) / ses_data$T[ses_data$geo=="FR"] *100 # index for France
+  fpt_euu = abs(ses_data$F[ses_data$geo=="EU28"] - ses_data$M[ses_data$geo=="EU28"]) / ses_data$T[ses_data$geo=="EU28"] *100 # index for EU
 
   branches_imp_coef = fpt_euu / fpt_fra
 
