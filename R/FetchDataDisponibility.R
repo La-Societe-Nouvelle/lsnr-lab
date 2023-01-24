@@ -6,9 +6,9 @@
 #'
 #' @return An `integer` object containing available year(s) for considered indicator.
 #' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}}, \code{\link{BuildNRGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataDisponibility}}.
+#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
-#' Year=FetchDataDisponibility("GHG")
+#' Year=FetchDataAvailability("GHG")
 #' BuildGHGData(Year)
 #' @export
 
@@ -25,7 +25,7 @@ buildLSNREnv = function()
   return(lsnrEnv)
 }
 
-FetchDataDisponibility = function(indicator) 
+FetchDataAvailability = function(indicator)
 {
   years_ere=1949:2020 # ERE ?
   years_tess=c(2010:2013,2015:2018)
@@ -34,7 +34,7 @@ FetchDataDisponibility = function(indicator)
   base=years_ere[years_ere %in% years_tess & years_ere %in% years_tei & years_ere %in% years_cpeb]
 
   indicator=tolower(indicator)
-  
+
   if(indicator=="knw"){
     KNW=c(2010,2015)
     base=base[base %in% KNW]

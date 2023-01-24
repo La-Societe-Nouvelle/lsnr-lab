@@ -9,15 +9,15 @@
 #' imported products associated coefficient, data sources and values unit.
 #'
 #' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}}, \code{\link{BuildNRGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataDisponibility}}.
+#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #'
 #' @examples
-#' BuildWATData(max(FetchDataDisponibility("WAT"))
+#' BuildWATData(max(FetchDataAvailability("WAT"))
 #' @export
 
 source('R/InseeDataManager.R')
 
-build_branches_nva_fpt_wat = function(year) 
+build_branches_nva_fpt_wat = function(year)
 {
   # get branches aggregates -------------------------- #
 
@@ -47,11 +47,11 @@ build_branches_nva_fpt_wat = function(year)
   raw_fpt$ELC_FPT = wat_abs_data$ABS_ELC_CL[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "DZ"]
   raw_fpt$CON_FPT = wat_abs_data$ABS_CON[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "FZ"]
   raw_fpt$SER_FPT = wat_abs_data$ABS_SER[1]*1000 / sum(branches_aggregates$NVA[branches_aggregates$BRANCH %in% c("GZ","HZ","IZ","JA","JB","JC","KZ","LZ","MA","MB","MC","NZ","OZ","PZ","QA","QB","RZ","SZ","TZ")])
-  
+
   # sector fpt --------------------------------------- #
 
   sector_fpt_list = list()
-  
+
   sector_fpt_list[["A"]]    = raw_fpt$AGR_FPT
   sector_fpt_list[["B"]]    = raw_fpt$MIN_FPT
   sector_fpt_list[["C-E"]]  = raw_fpt$IND_FPT
@@ -76,7 +76,7 @@ build_branches_nva_fpt_wat = function(year)
     # get sector
     branch = nva_fpt_data$BRANCH[i]
     sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
-    
+
     # build values
     nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector] * branches_aggregates$NVA[i]
     nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]

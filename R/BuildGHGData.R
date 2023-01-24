@@ -9,26 +9,26 @@
 #' @return An object `list` made up of 5 elements : value added impacts by French branches,
 #' imported products associated coefficient, data sources, values unit and value added impacts by French divisions.
 #' @seealso \code{\link{BuildECOData}}, \code{\link{BuildNRGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataDisponibility}}.
+#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
-#' BuildGHGData(max(FetchDataDisponibility("GHG"))
+#' BuildGHGData(max(FetchDataAvailability("GHG"))
 #' @export
 
 source('R/InseeDataManager.R')
 
-build_branches_nva_fpt_ghg = function(year) 
+build_branches_nva_fpt_ghg = function(year)
 {
   # -------------------------------------------------- #
 
   wd = getwd()
   branches = read.csv(paste0(wd,"/lib/","Branches.csv"), header=T, sep=";")
- 
+
   # get branches aggregates -------------------------- #
 
   branches_aggregates = get_branches_aggregates(year)
 
   # fetch data --------------------------------------- #
-  
+
   tryCatch({
     set1=c("A","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31_C32","C33","D","E","F","G","H","I","J","J58","J59_J60","J61","J62_J63","K","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","O","P","Q","Q86","Q87_Q88","R")
     eurostat_data_1 = get_eurostat(
@@ -36,7 +36,7 @@ build_branches_nva_fpt_ghg = function(year)
       time_format = "num",
       filters = list(geo="FR", unit="T", time=year, airpol="GHG", nace_r2=set1)
     )
-    
+
     set2=c("S","T","TOTAL")
     eurostat_data_2 = get_eurostat(
       "env_ac_ainah_r2",
@@ -116,9 +116,9 @@ get_branches_imp_coef_ghg = function(year)
   # fetch data
 
   wdi_data = WDI(
-    indicator = "EN.ATM.CO2E.KD.GD", 
+    indicator = "EN.ATM.CO2E.KD.GD",
     country=c("FR","1W"),
-    start = year, 
+    start = year,
     end = year
   )
 
@@ -126,6 +126,6 @@ get_branches_imp_coef_ghg = function(year)
   fpt_wld =  wdi_data$EN.ATM.CO2E.KD.GD[wdi_data$iso2c=="1W"]
 
   branches_imp_coef = fpt_wld / fpt_fra
-  
+
   return(branches_imp_coef)
 }

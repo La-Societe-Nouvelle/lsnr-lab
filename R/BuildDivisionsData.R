@@ -1,18 +1,21 @@
-#'Compute default values of societal footprints by NACE divisions (88).
+#' Compute macroeconomic values of societal footprints by NACE divisions (88)
 #'
-#'#'Unlike BuildDivisionsData function, this derived model take into
-#'account fixed capital consumption.
+#' @details This function aims to compute French branch societal footprints by non-financial dimension by year.
+#' It involves, on one hand, a macroeconomic input-output modelization of the French economy and its interactions with
+#' the rest of the world, based on INSEE IOTs, and requires, on the other hand, direct impact data from institutional sources.
+#' Specifically BuildDivisionsData compute division footprints by adjusting branch footprints thanks to
+#' division economic aggregate values.
 #'
-#'This function returns a table summarizing final default values
-#'of the chosen indicator on the selected year.
+#' @param year year of requested data.
+#' @param indicator requested non-financial dimension.
 #'
-#' @param Year Considered year.
-#' @param Indicator Considered indicator.
+#' @return A table of macroeconomic footprint values by economic activities division.
 #'
-#' @return A `data.frame` object containing final default values by economic activities divisions.
-#' @seealso \code{\link{BuildBranchesData}}, \code{\link{FetchDataDisponibility}}.
+#' @seealso \code{\link{buildBranchesData}}, \code{\link{getIndicatorList}}, \code{\link{buildDiscountedData}}.
+#'
 #' @examples
-#' BuildDivisionsDataV2("GHG",2018)
+#' buildDivisions("ECO",2019)
+#'
 #' @export
 
 source('R/BuildBranchesData.R')
@@ -35,7 +38,7 @@ build_divisions_fpt = function(indicator,year)
   # divisions fpt
   fpt_divisions = get_empty_divisions_fpt(divisions)
 
-  for(i in 1:nrow(fpt_divisions)) 
+  for(i in 1:nrow(fpt_divisions))
   {
     branch = divisions$BRANCH[i]
     fpt_divisions$NVA_FPT[i] = nva_fpt$FOOTPRINT[i]
@@ -44,7 +47,7 @@ build_divisions_fpt = function(indicator,year)
     fpt_divisions$PRD_FPT[i] = (nva_fpt$FOOTPRINT[i]*divisions_aggregates$NVA[i] + fpt_branches$IC_FPT[i]*divisions_aggregates$IC[i] + fpt_divisions$CFC_FPT[i]*divisions_aggregates$CFC[i]) / divisions_aggregates$PRD[i]
   }
 
-  output_2 = fpt_divisions %>% 
+  output_2 = fpt_divisions %>%
     pivot_longer(!DIV, names_to = "AGGREGATE", values_to = "VALUE") %>%
     mutate(AGGREGATE = str_remove(AGGREGATE,"_FPT"))
 

@@ -8,14 +8,14 @@
 #' @return An object `list` made up of 4 elements : value added impacts by French branches,
 #' imported products associated coefficient, data sources and values unit.
 #' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}}, \code{\link{BuildNRGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataDisponibility}}.
+#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
-#' BuildARTData(max(FetchDataDisponibility("ART"))
+#' BuildARTData(max(FetchDataAvailability("ART"))
 #' @export
 
 source('R/InseeDataManager.R')
 
-build_branches_nva_fpt_art = function(year) 
+build_branches_nva_fpt_art = function(year)
 {
   # get branches aggregates -------------------------- #
 
@@ -47,7 +47,7 @@ build_branches_nva_fpt_art = function(year)
   # -------------------------------------------------- #
 }
 
-build_divisions_nva_fpt_art = function(year) 
+build_divisions_nva_fpt_art = function(year)
 {
   # get divisions aggregates -------------------------- #
 

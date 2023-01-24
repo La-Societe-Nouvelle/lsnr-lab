@@ -9,14 +9,14 @@
 #' @return An object `list` made up of 4 elements : value added impacts by French branches,
 #' imported products associated coefficient, data sources and values unit.
 #' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataDisponibility}}.
+#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
-#' BuildMATData(max(FetchDataDisponibility("MAT"))
+#' BuildMATData(max(FetchDataAvailability("MAT"))
 #' @export
 
 source('R/InseeDataManager.R')
 
-build_branches_nva_fpt_mat = function(year) 
+build_branches_nva_fpt_mat = function(year)
 {
   # get branches aggregates -------------------------- #
 
@@ -61,7 +61,7 @@ build_branches_nva_fpt_mat = function(year)
     # get sector
     branch = nva_fpt_data$BRANCH[i]
     sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
-    
+
     # build values
     nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector] * branches_aggregates$NVA[i]
     nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
@@ -85,6 +85,6 @@ get_branches_imp_coef_mat = function(year)
   fpt_euu =  eurostat_data$values[eurostat_data$geo=="EU27_2020"]
 
   branches_imp_coef = fpt_euu / fpt_fra
-  
+
   return(branches_imp_coef)
 }

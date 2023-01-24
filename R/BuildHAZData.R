@@ -8,21 +8,21 @@
 #' @return An object `list` made up of 4 elements : value added impacts by French branches,
 #' imported products associated coefficient, data sources and values unit.
 #' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataDisponibility}}.
+#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
-#' BuildHAZData(max(FetchDataDisponibility("HAZ"))
+#' BuildHAZData(max(FetchDataAvailability("HAZ"))
 #' @export
 
 source('R/InseeDataManager.R')
 
-build_branches_nva_fpt_haz = function(selectedYear) 
+build_branches_nva_fpt_haz = function(selectedYear)
 {
   # get branches aggregates -------------------------- #
 
   branches_aggregates = get_branches_aggregates(selectedYear)
 
   # fetch data --------------------------------------- #
-  
+
   # fetch data --------------------------------------- #
 
   tryCatch({
@@ -31,13 +31,13 @@ build_branches_nva_fpt_haz = function(selectedYear)
     res_impqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_IMPQNT_PRODCOM_FRA_T")
     res_expqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_EXPQNT_PRODCOM_FRA_T")
 
-    data_prodqnt = fromJSON(rawToChar(res_prodqnt$content))$data %>% 
+    data_prodqnt = fromJSON(rawToChar(res_prodqnt$content))$data %>%
       mutate(aggregate = "PRODQNT")
-    data_impqnt = fromJSON(rawToChar(res_impqnt$content))$data %>% 
+    data_impqnt = fromJSON(rawToChar(res_impqnt$content))$data %>%
       mutate("aggregate" = "IMPQNT")
-    data_expqnt = fromJSON(rawToChar(res_expqnt$content))$data %>% 
+    data_expqnt = fromJSON(rawToChar(res_expqnt$content))$data %>%
       mutate("aggregate" = "EXPQNT")
-    
+
     prodcom_data = data_prodqnt %>%
       rbind(data_impqnt) %>%
       rbind(data_expqnt) %>%
@@ -47,7 +47,7 @@ build_branches_nva_fpt_haz = function(selectedYear)
     reversed_ic_matrix = suppressMessages(get_reversed_ic_matrix(selectedYear)) %>%
       filter(PRODUCT == "CE") %>%
       pivot_longer(!PRODUCT, names_to = "BRANCH", values_to = "VALUE")
-    
+
   }, error = function(e) {
     print(e)
     stop(paste0("Données indisponibles pour ",selectedYear))
@@ -88,7 +88,7 @@ build_branches_nva_fpt_haz = function(selectedYear)
     nva_fpt_data$UNIT_IMPACT[i] = "T"
     nva_fpt_data$FOOTPRINT[i] = (haz_dmc_qnt * reversed_ic_matrix$VALUE[reversed_ic_matrix$BRANCH==branch]) / branches_aggregates$NVA[branches_aggregates$BRANCH==branch]
     nva_fpt_data$UNIT_FOOTPRINT[i] = "G_CPEUR"
-    
+
     # build values
     # nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector] * branches_aggregates$NVA[i]
     # nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]

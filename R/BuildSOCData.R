@@ -8,14 +8,14 @@
 #' @return An object `list` made up of 4 elements : value added impacts by French branches,
 #' imported products associated coefficient, data sources and values unit.
 #' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataDisponibility}}.
+#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
-#' BuildSOCData(max(FetchDataDisponibility("SOC"))
+#' BuildSOCData(max(FetchDataAvailability("SOC"))
 #' @export
 
 source('R/InseeDataManager.R')
 
-build_branches_nva_fpt_soc = function(year) 
+build_branches_nva_fpt_soc = function(year)
 {
   # get branches aggregates -------------------------- #
 
@@ -38,7 +38,7 @@ build_branches_nva_fpt_soc = function(year)
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
 
   for(i in 1:nrow(nva_fpt_data))
-  {    
+  {
     # build values
     nva_fpt_data$GROSS_IMPACT[i] = ess_data$FOOTPRINT[i] * branches_aggregates$NVA[i]
     nva_fpt_data$FOOTPRINT[i] = ess_data$FOOTPRINT[i]
