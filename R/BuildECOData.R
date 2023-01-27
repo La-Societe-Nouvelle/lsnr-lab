@@ -15,11 +15,11 @@
 
 source('R/InseeDataManager.R')
 
-build_branches_nva_fpt_eco = function(year)
+build_branches_nva_fpt_eco = function(selectedYear)
 {
   # get branches aggregates -------------------------- #
 
-  branches_aggregates = get_branches_aggregates(year)
+  branches_aggregates = get_branches_aggregates(selectedYear)
 
   # build nva fpt dataframe -------------------------- #
 
@@ -28,11 +28,9 @@ build_branches_nva_fpt_eco = function(year)
 
   for(i in 1:nrow(nva_fpt_data))
   {
-    # get sector
-    branch = nva_fpt_data$BRANCH[i]
-
     # build values
     nva_fpt_data$GROSS_IMPACT[i] = branches_aggregates$NVA[i]
+    nva_fpt_data$UNIT_GROSS_IMPACT[i] = "CPMEUR"
     nva_fpt_data$FOOTPRINT[i] = 100.0
     nva_fpt_data$UNIT_FOOTPRINT[i] = "P100"
   }
@@ -41,11 +39,11 @@ build_branches_nva_fpt_eco = function(year)
   # -------------------------------------------------- #
 }
 
-build_divisions_nva_fpt_eco = function(year)
+build_divisions_nva_fpt_eco = function(selectedYear)
 {
   # get divisions aggregates -------------------------- #
 
-  divisions_aggregates = get_divisions_aggregates(year)
+  divisions_aggregates = get_divisions_aggregates(selectedYear)
 
   # build nva fpt dataframe -------------------------- #
 
@@ -54,11 +52,9 @@ build_divisions_nva_fpt_eco = function(year)
 
   for(i in 1:nrow(nva_fpt_data))
   {
-    # get sector
-    branch = nva_fpt_data$DIVISION[i]
-
     # build values
     nva_fpt_data$GROSS_IMPACT[i] = divisions_aggregates$NVA[i]
+    nva_fpt_data$UNIT_GROSS_IMPACT[i] = "CPMEUR"
     nva_fpt_data$FOOTPRINT[i] = 100.0
     nva_fpt_data$UNIT_FOOTPRINT[i] = "P100"
   }
@@ -67,7 +63,7 @@ build_divisions_nva_fpt_eco = function(year)
   # -------------------------------------------------- #
 }
 
-get_branches_imp_coef_eco = function(year)
+get_branches_imp_coef_eco = function(selectedYear)
 {
   branches_imp_coef = 0
   return(branches_imp_coef)

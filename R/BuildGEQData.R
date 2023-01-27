@@ -16,18 +16,18 @@
 
 source('R/InseeDataManager.R')
 
-build_branches_nva_fpt_geq = function(year)
+build_branches_nva_fpt_geq = function(selectedYear)
 {
   # get branches aggregates -------------------------- #
 
-  branches_aggregates = get_branches_aggregates(year)
+  branches_aggregates = get_branches_aggregates(selectedYear)
 
   # fetch data --------------------------------------- #
 
   tryCatch({
     eurostat_data = get_eurostat("earn_ses_hourly")
   }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",year," (table earn_ses_hourly)"))
+    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table earn_ses_hourly)"))
   })
 
   ses_data = eurostat_data %>%
@@ -36,7 +36,7 @@ build_branches_nva_fpt_geq = function(year)
     filter(indic_se == "MEAN_E_EUR") %>%
     filter(isco08 == "TOTAL") %>%
     filter(worktime == "TOTAL") %>%
-    filter(time == paste0(year,"-01-01")) %>%
+    filter(time == paste0(selectedYear,"-01-01")) %>%
     pivot_wider(names_from = sex, values_from = values)
 
   # sector fpt --------------------------------------- #
@@ -75,18 +75,18 @@ build_branches_nva_fpt_geq = function(year)
   # -------------------------------------------------- #
 }
 
-build_divisions_nva_fpt_geq = function(year)
+build_divisions_nva_fpt_geq = function(selectedYear)
 {
   # get divisions aggregates -------------------------- #
 
-  divisions_aggregates = get_divisions_aggregates(year)
+  divisions_aggregates = get_divisions_aggregates(selectedYear)
 
   # fetch data --------------------------------------- #
 
   tryCatch({
     eurostat_data = get_eurostat("earn_ses_hourly")
   }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",year," (table earn_ses_hourly)"))
+    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table earn_ses_hourly)"))
   })
 
   ses_data = eurostat_data %>%
@@ -95,7 +95,7 @@ build_divisions_nva_fpt_geq = function(year)
     filter(indic_se == "MEAN_E_EUR") %>%
     filter(isco08 == "TOTAL") %>%
     filter(worktime == "TOTAL") %>%
-    filter(time == paste0(year,"-01-01")) %>%
+    filter(time == paste0(selectedYear,"-01-01")) %>%
     pivot_wider(names_from = sex, values_from = values)
 
   # sector fpt --------------------------------------- #
@@ -116,16 +116,17 @@ build_divisions_nva_fpt_geq = function(year)
   colnames(nva_fpt_data) = c("DIVISION", "NVA")
 
   wd = getwd()
-  branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixGEQ.csv"), header=T, sep=";")
+  division_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","DivisionMappingGEQ.csv"), header=T, sep=";")
 
   for(i in 1:nrow(nva_fpt_data))
   {
     # get sector
-    branch = nva_fpt_data$BRANCH[i]
-    sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
+    division = nva_fpt_data$DIVISION[i]
+    sector = division_sector_fpt_matrix$SECTOR[division_sector_fpt_matrix$DIVISION==division]
 
     # build values
     nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
+    nva_fpt_data$UNIT_GROSS_IMPACT[i] = "P100"
     nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
     nva_fpt_data$UNIT_FOOTPRINT[i] = "P100"
   }
