@@ -23,8 +23,9 @@ source("R/BuildBranchesData.R")
 print("start")
 #test = buildBranchesData("art", 2015)
 tryCatch({
-  test = suppressWarnings(buildBranchesData("haz","2017"))
+  test = suppressWarnings(buildBranchesData("eco","2018"))
   print(test)
+  print(filter(test, AGGREGATE=="TRESS"), n=38)
 }, warning = function(war) {
   print(war$message)
 }, error = function(err) {

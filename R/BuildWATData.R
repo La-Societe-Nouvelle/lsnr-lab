@@ -17,11 +17,11 @@
 
 source('R/InseeDataManager.R')
 
-build_branches_nva_fpt_wat = function(year)
+build_branches_nva_fpt_wat = function(selectedYear)
 {
   # get branches aggregates -------------------------- #
 
-  branches_aggregates = get_branches_aggregates(year)
+  branches_aggregates = get_branches_aggregates(selectedYear)
 
   # fetch data --------------------------------------- #
 
@@ -29,10 +29,10 @@ build_branches_nva_fpt_wat = function(year)
     eurostat_data = get_eurostat(
       "env_wat_abs",
       time_format = "num",
-      filters = list(geo = c("FR"), unit = "MIO_M3", time = year, wat_src = "FRW")
+      filters = list(geo = c("FR"), unit = "MIO_M3", time = selectedYear, wat_src = "FRW")
     )
   }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",year," (table env_wat_abs)"))
+    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table env_wat_abs)"))
   })
 
   wat_abs_data = eurostat_data %>%

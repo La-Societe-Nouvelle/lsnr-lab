@@ -28,7 +28,7 @@ build_branches_nva_fpt_art = function(selectedYear)
     res = GET("https://api.lasocietenouvelle.org/serie/MACRO_CRAFTEDNVA_DGE__FRA_CPMEUR")
 
     dge_data = fromJSON(rawToChar(res$content))$data %>%
-      filter(dge_data$year == selectedYear)
+      filter(year == selectedYear)
     
   }, error = function(e) {
     stop(paste0("Données indisponibles pour ",selectedYear))

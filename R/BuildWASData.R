@@ -15,7 +15,7 @@
 
 source('R/InseeDataManager.R')
 
-build_branches_nva_fpt_was = function(year)
+build_branches_nva_fpt_was = function(selectedYear)
 {
   # -------------------------------------------------- #
 
@@ -24,14 +24,14 @@ build_branches_nva_fpt_was = function(year)
 
   # get branches aggregates -------------------------- #
 
-  branches_aggregates = get_branches_aggregates(year)
+  branches_aggregates = get_branches_aggregates(selectedYear)
 
   # fetch data --------------------------------------- #
 
   tryCatch({
     eurostat_data = get_eurostat("env_wasgen")
   }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",year," (table env_wasgen)"))
+    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table env_wasgen)"))
   })
 
   wasgen_data = eurostat_data %>%
@@ -39,7 +39,7 @@ build_branches_nva_fpt_was = function(year)
     filter(waste=="TOTAL") %>%
     filter(hazard=="HAZ_NHAZ") %>%
     filter(unit=="T") %>%
-    filter(time == paste0(year,"-01-01"))
+    filter(time == paste0(selectedYear,"-01-01"))
 
   # sector fpt --------------------------------------- #
 

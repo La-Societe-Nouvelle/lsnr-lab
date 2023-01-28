@@ -102,6 +102,41 @@ build_branches_nva_fpt_haz = function(selectedYear)
   # -------------------------------------------------- #
 }
 
+build_divisions_nva_fpt_haz = function(selectedYear)
+{
+  # get branches aggregates -------------------------- #
+
+  divisions_aggregates = get_divisions_aggregates(selectedYear) 
+
+  # sector fpt --------------------------------------- #
+
+  sector_fpt = build_branches_nva_fpt_haz(selectedYear)
+
+  # build nva fpt dataframe -------------------------- #
+
+  nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
+  colnames(nva_fpt_data) = c("DIVISION", "NVA")
+
+  wd = getwd()
+  divisions = read.csv(paste0(wd,"/lib/","Divisions.csv"), header=T, sep=";")
+
+  for(i in 1:nrow(nva_fpt_data))
+  {
+    # get division
+    division = nva_fpt_data$DIVISION[i]
+    branch = divisions$BRANCH[divisions$DIVISION==division]
+
+    # build values
+    nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$BRANCH==branch] * divisions_aggregates$NVA[divisions_aggregates$DIVISION==division]
+    nva_fpt_data$UNIT_IMPACT[i] = "T"
+    nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$BRANCH==branch]
+    nva_fpt_data$UNIT_FOOTPRINT[i] = "G_CPEUR"
+  }
+
+  return(nva_fpt_data)
+  # -------------------------------------------------- #
+}
+
 get_branches_imp_coef_haz = function(selectedYear)
 {
   # fetch data

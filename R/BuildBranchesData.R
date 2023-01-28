@@ -134,7 +134,7 @@ buildBranchesData = function(indicator, year)
     
     #print(fpt_branches)
 
-    isResultsStables = checkResultsStables(prev_fpt_branches,fpt_branches)
+    isResultsStables = checkResultsStables(prev_fpt_branches,fpt_branches) && nbIterations > 1
   }
 
   #Second iteration process

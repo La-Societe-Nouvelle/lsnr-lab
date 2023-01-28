@@ -300,7 +300,6 @@ get_cfc_matrix = function (year)
     arrange(CNA_ACTIVITE) %>%
     replace(is.na(.),0)
   
-  print(ccf_data)
   # fetch data (ENC)
   insee_enc_data = get_insee_dataset(
     "CNA-2014-PAT-NF",
@@ -320,7 +319,6 @@ get_cfc_matrix = function (year)
   
   # build cfc matrix
   cfc_matrix = as.data.frame(ccf_data[,1])
-  print("there")
 
   for (j in 1:nrow(cfc_matrix)) # column -> branch
   {
