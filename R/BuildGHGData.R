@@ -14,7 +14,7 @@
 #' BuildGHGData(max(FetchDataAvailability("GHG"))
 #' @noRd
 
-build_branches_nva_fpt_ghg = function(year)
+build_branches_nva_fpt_ghg = function(selectedYear)
 {
   # -------------------------------------------------- #
 
@@ -22,42 +22,44 @@ build_branches_nva_fpt_ghg = function(year)
 
   # get branches aggregates -------------------------- #
 
-  branches_aggregates = get_branches_aggregates(year)
+  branches_aggregates = get_branches_aggregates(selectedYear)
 
   # fetch data --------------------------------------- #
 
   tryCatch({
+
     set1=c("A","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31_C32","C33","D","E","F","G","H","I","J","J58","J59_J60","J61","J62_J63","K","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","O","P","Q","Q86","Q87_Q88","R")
     eurostat_data_1 = get_eurostat(
       "env_ac_ainah_r2",
       time_format = "num",
-      filters = list(geo="FR", unit="T", time=year, airpol="GHG", nace_r2=set1)
+      filters = list(geo="FR", unit="T", time=selectedYear, airpol="GHG", nace_r2=set1)
     )
 
     set2=c("S","T","TOTAL")
     eurostat_data_2 = get_eurostat(
       "env_ac_ainah_r2",
       time_format = "num",
-      filters = list(geo="FR", unit="T", time=year, airpol="GHG", nace_r2=set2)
+      filters = list(geo="FR", unit="T", time=selectedYear, airpol="GHG", nace_r2=set2)
     )
+
   }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",year," (table env_ac_ainah_r2)"))
+    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table env_ac_ainah_r2)"))
   })
 
   ac_ainah_data = rbind(eurostat_data_1,eurostat_data_2)
-  print("data fetched")
 
   # sector fpt --------------------------------------- #
 
   sector_fpt_list = list()
 
-  for (i in 1:nrow(branches)) {
+  for (i in 1:nrow(branches)) 
+  {
     code_nace = branches$NACE_R2[i]
     if (code_nace %in% ac_ainah_data$nace_r2) {
       if (branches_aggregates$NVA[i]>0) {
         sector_fpt_list[[code_nace]] = ac_ainah_data$values[ac_ainah_data$nace_r2==code_nace] / branches_aggregates$NVA[i]
       } else {
-        sector_fpt_list[[code_nace]] = 0
+        sector_fpt_list[[code_nace]] = 0 # null ?
       }
     }
   }
@@ -82,7 +84,6 @@ build_branches_nva_fpt_ghg = function(year)
 
   sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(sector_fpt_list))
   colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
-  print(sector_fpt)
 
   # build nva fpt dataframe -------------------------- #
 
@@ -99,6 +100,88 @@ build_branches_nva_fpt_ghg = function(year)
 
     # build values
     nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector] * branches_aggregates$NVA[i]
+    nva_fpt_data$UNIT_GROSS_IMPACT[i] = "TCO2E"
+    nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
+    nva_fpt_data$UNIT_FOOTPRINT[i] = "GCO2E_CPEUR"
+  }
+
+  return(nva_fpt_data)
+  # -------------------------------------------------- #
+}
+
+build_divisions_nva_fpt_ghg = function(selectedYear)
+{
+  # -------------------------------------------------- #
+
+  wd = getwd()
+  divisions = read.csv(paste0(wd,"/lib/","Divisions.csv"), header=T, sep=";")
+
+  # get divisions aggregates ------------------------- #
+
+  divisions_aggregates = get_divisions_aggregates(selectedYear)
+
+  # fetch data --------------------------------------- #
+
+  tryCatch({
+
+    set1=c("A","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31_C32","C33","D","E","F","G","H","I","J","J58","J59_J60","J61","J62_J63","K","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","O","P","Q","Q86","Q87_Q88","R")
+    eurostat_data_1 = get_eurostat(
+      "env_ac_ainah_r2",
+      time_format = "num",
+      filters = list(geo="FR", unit="T", time=selectedYear, airpol="GHG", nace_r2=set1)
+    )
+
+    set2=c("S","T","TOTAL")
+    eurostat_data_2 = get_eurostat(
+      "env_ac_ainah_r2",
+      time_format = "num",
+      filters = list(geo="FR", unit="T", time=selectedYear, airpol="GHG", nace_r2=set2)
+    )
+
+  }, error = function(e) {
+    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table env_ac_ainah_r2)"))
+  })
+
+  ac_ainah_data = rbind(eurostat_data_1,eurostat_data_2)
+
+  # sector fpt --------------------------------------- #
+
+  sector_fpt_list = list()
+
+  for (i in 1:nrow(divisions)) 
+  {
+    code_nace = divisions$NACE_R2[i]
+    if (code_nace %in% ac_ainah_data$nace_r2) {
+      if (divisions_aggregates$NVA[i]>0) {
+        sector_fpt_list[[code_nace]] = ac_ainah_data$values[ac_ainah_data$nace_r2==code_nace] / divisions_aggregates$NVA[i]
+      } else {
+        print(code_nace)
+        sector_fpt_list[[code_nace]] = 0 # null ?
+      }
+    }
+  }
+
+  sector_fpt = cbind.data.frame(sector_fpt_list) %>% 
+    pivot_longer(cols = names(sector_fpt_list))
+  colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
+
+  # build nva fpt dataframe -------------------------- #
+
+  nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
+  colnames(nva_fpt_data) = c("DIVISION", "NVA")
+
+  wd = getwd()
+  division_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixGHG.csv"), header=T, sep=";")
+
+  for(i in 1:nrow(nva_fpt_data))
+  {
+    # get sector
+    division = nva_fpt_data$DIVISION[i]
+    sector = division_sector_fpt_matrix$SECTOR[division_sector_fpt_matrix$DIVISION==division]
+
+    # build values
+    nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector] * divisions_aggregates$NVA[i]
+    nva_fpt_data$UNIT_GROSS_IMPACT[i] = "TCO2E"
     nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
     nva_fpt_data$UNIT_FOOTPRINT[i] = "GCO2E_CPEUR"
   }

@@ -13,15 +13,26 @@
 #' BuildSOCData(max(FetchDataAvailability("SOC"))
 #' @noRd
 
-build_branches_nva_fpt_soc = function(year)
+build_branches_nva_fpt_soc = function(selectedYear)
 {
   # get branches aggregates -------------------------- #
 
-  branches_aggregates = get_branches_aggregates(year)
+  branches_aggregates = get_branches_aggregates(selectedYear)
 
   # fetch data --------------------------------------- #
 
+<<<<<<< HEAD
   ess_data = lsnr:::SOC_DATA
+=======
+  tryCatch({
+    # for loop to fetch data for each branch
+    res = GET("https://api.lasocietenouvelle.org/serie/SIRENE_ESS_LEGALUNITS_P100_FRA_BRANCH")
+    dge_data = fromJSON(rawToChar(res$content))$data %>%
+      filter(dge_data$year == selectedYear)
+  }, error = function(e) {
+    stop(paste0("Données indisponibles pour ",selectedYear))
+  })
+>>>>>>> 861152fe4597143143ebda2ccc7843a80d4f6b35
 
   # build nva fpt dataframe -------------------------- #
 
@@ -32,6 +43,7 @@ build_branches_nva_fpt_soc = function(year)
   {
     # build values
     nva_fpt_data$GROSS_IMPACT[i] = ess_data$FOOTPRINT[i] * branches_aggregates$NVA[i]
+    nva_fpt_data$UNIT_GROSS_IMPACT[i] = "CPMEUR"
     nva_fpt_data$FOOTPRINT[i] = ess_data$FOOTPRINT[i]
     nva_fpt_data$UNIT_FOOTPRINT[i] = ess_data$UNIT_FOOTPRINT[i]
   }
@@ -40,7 +52,42 @@ build_branches_nva_fpt_soc = function(year)
   # -------------------------------------------------- #
 }
 
-get_branches_imp_coef_soc = function(year)
+build_divisions_nva_fpt_soc = function(selectedYear)
+{
+  # get branches aggregates -------------------------- #
+
+  divisions_aggregates() = get_divisions_aggregates(selectedYear)
+
+  # fetch data --------------------------------------- #
+
+  tryCatch({
+    # for loop to fetch data for each branch
+    res = GET("https://api.lasocietenouvelle.org/serie/SIRENE_ESS_LEGALUNITS_P100_FRA_BRANCH")
+    dge_data = fromJSON(rawToChar(res$content))$data %>%
+      filter(dge_data$year == selectedYear)
+  }, error = function(e) {
+    stop(paste0("Données indisponibles pour ",selectedYear))
+  })
+
+  # build nva fpt dataframe -------------------------- #
+
+  nva_fpt_data = as.data.frame(cbind(divisions_aggregates$BRANCH, divisions_aggregates$NVA))
+  colnames(nva_fpt_data) = c("DIVISION", "NVA")
+
+  for(i in 1:nrow(nva_fpt_data))
+  {
+    # build values
+    nva_fpt_data$GROSS_IMPACT[i] = ess_data$FOOTPRINT[i] * divisions_aggregates$NVA[i]
+    nva_fpt_data$UNIT_GROSS_IMPACT[i] = "CPMEUR"
+    nva_fpt_data$FOOTPRINT[i] = ess_data$FOOTPRINT[i]
+    nva_fpt_data$UNIT_FOOTPRINT[i] = ess_data$UNIT_FOOTPRINT[i]
+  }
+
+  return(nva_fpt_data)
+  # -------------------------------------------------- #
+}
+
+get_branches_imp_coef_soc = function(selectedYear)
 {
   branches_imp_coef = 0
   return(branches_imp_coef)

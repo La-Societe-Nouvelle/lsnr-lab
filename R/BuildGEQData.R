@@ -14,18 +14,18 @@
 #' BuildGEQData(max(FetchDataAvailability("GEQ"))
 #' @noRd
 
-build_branches_nva_fpt_geq = function(year)
+build_branches_nva_fpt_geq = function(selectedYear)
 {
   # get branches aggregates -------------------------- #
 
-  branches_aggregates = get_branches_aggregates(year)
+  branches_aggregates = get_branches_aggregates(selectedYear)
 
   # fetch data --------------------------------------- #
 
   tryCatch({
     eurostat_data = get_eurostat("earn_ses_hourly")
   }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",year," (table earn_ses_hourly)"))
+    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table earn_ses_hourly)"))
   })
 
   ses_data = eurostat_data %>%
@@ -34,7 +34,7 @@ build_branches_nva_fpt_geq = function(year)
     filter(indic_se == "MEAN_E_EUR") %>%
     filter(isco08 == "TOTAL") %>%
     filter(worktime == "TOTAL") %>%
-    filter(time == paste0(year,"-01-01")) %>%
+    filter(time == paste0(selectedYear,"-01-01")) %>%
     pivot_wider(names_from = sex, values_from = values)
 
   # sector fpt --------------------------------------- #
@@ -72,18 +72,18 @@ build_branches_nva_fpt_geq = function(year)
   # -------------------------------------------------- #
 }
 
-build_divisions_nva_fpt_geq = function(year)
+build_divisions_nva_fpt_geq = function(selectedYear)
 {
   # get divisions aggregates -------------------------- #
 
-  divisions_aggregates = get_divisions_aggregates(year)
+  divisions_aggregates = get_divisions_aggregates(selectedYear)
 
   # fetch data --------------------------------------- #
 
   tryCatch({
     eurostat_data = get_eurostat("earn_ses_hourly")
   }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",year," (table earn_ses_hourly)"))
+    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table earn_ses_hourly)"))
   })
 
   ses_data = eurostat_data %>%
@@ -92,7 +92,7 @@ build_divisions_nva_fpt_geq = function(year)
     filter(indic_se == "MEAN_E_EUR") %>%
     filter(isco08 == "TOTAL") %>%
     filter(worktime == "TOTAL") %>%
-    filter(time == paste0(year,"-01-01")) %>%
+    filter(time == paste0(selectedYear,"-01-01")) %>%
     pivot_wider(names_from = sex, values_from = values)
 
   # sector fpt --------------------------------------- #
@@ -112,16 +112,22 @@ build_divisions_nva_fpt_geq = function(year)
   nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
   colnames(nva_fpt_data) = c("DIVISION", "NVA")
 
+<<<<<<< HEAD
   branch_sector_fpt_matrix = lsnr:::MatrixGEQ
+=======
+  wd = getwd()
+  division_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","DivisionMappingGEQ.csv"), header=T, sep=";")
+>>>>>>> 861152fe4597143143ebda2ccc7843a80d4f6b35
 
   for(i in 1:nrow(nva_fpt_data))
   {
     # get sector
-    branch = nva_fpt_data$BRANCH[i]
-    sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
+    division = nva_fpt_data$DIVISION[i]
+    sector = division_sector_fpt_matrix$SECTOR[division_sector_fpt_matrix$DIVISION==division]
 
     # build values
     nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
+    nva_fpt_data$UNIT_GROSS_IMPACT[i] = "P100"
     nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
     nva_fpt_data$UNIT_FOOTPRINT[i] = "P100"
   }
@@ -130,17 +136,20 @@ build_divisions_nva_fpt_geq = function(year)
   # -------------------------------------------------- #
 }
 
-get_branches_imp_coef_geq = function(year)
+get_branches_imp_coef_geq = function(selectedYear)
 {
   # fetch data
   eurostat_data = get_eurostat(
     "earn_ses_hourly",
     time_format = "num",
-    filters = list(geo=c("FR","EU28"), age="TOTAL", indic_se="MEAN_E_EUR", isco08="TOTAL", worktime="TOTAL", time=year, nace_r2="TOTAL")
+    filters = list(geo=c("FR","EU28"), age="TOTAL", indic_se="MEAN_E_EUR", isco08="TOTAL", worktime="TOTAL", time=selectedYear, nace_r2="B-S_X_O")
   )
 
-  fpt_fra =  eurostat_data$values[eurostat_data$geo=="FR"]
-  fpt_euu =  eurostat_data$values[eurostat_data$geo=="EU28"]
+  ses_data = eurostat_data %>% 
+    pivot_wider(names_from = sex, values_from = values)
+  
+  fpt_fra = abs(ses_data$F[ses_data$geo=="FR"] - ses_data$M[ses_data$geo=="FR"]) / ses_data$T[ses_data$geo=="FR"] *100 # index for France
+  fpt_euu = abs(ses_data$F[ses_data$geo=="EU28"] - ses_data$M[ses_data$geo=="EU28"]) / ses_data$T[ses_data$geo=="EU28"] *100 # index for EU
 
   branches_imp_coef = fpt_euu / fpt_fra
 
