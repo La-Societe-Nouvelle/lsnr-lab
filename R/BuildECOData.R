@@ -11,9 +11,7 @@
 #'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
 #' BuildECOData(max(FetchDataAvailability("ECO"))
-#' @export
-
-source('R/InseeDataManager.R')
+#' @noRd
 
 build_branches_nva_fpt_eco = function(year)
 {

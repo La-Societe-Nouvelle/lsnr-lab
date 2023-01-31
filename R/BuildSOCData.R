@@ -11,9 +11,7 @@
 #'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
 #' BuildSOCData(max(FetchDataAvailability("SOC"))
-#' @export
-
-source('R/InseeDataManager.R')
+#' @noRd
 
 build_branches_nva_fpt_soc = function(year)
 {
@@ -23,8 +21,7 @@ build_branches_nva_fpt_soc = function(year)
 
   # fetch data --------------------------------------- #
 
-  wd = getwd()
-  ess_data = read.csv(paste0(wd,"/datasets/","SOC_DATA.csv"), header=T, sep=";")
+  ess_data = lsnr:::SOC_DATA
 
   # build nva fpt dataframe -------------------------- #
 

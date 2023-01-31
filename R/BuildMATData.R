@@ -12,9 +12,9 @@
 #'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
 #' BuildMATData(max(FetchDataAvailability("MAT"))
-#' @export
+#' @noRd
 
-source('R/InseeDataManager.R')
+
 
 build_branches_nva_fpt_mat = function(year)
 {
@@ -53,8 +53,7 @@ build_branches_nva_fpt_mat = function(year)
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
 
-  wd = getwd()
-  branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixMAT.csv"), header=T, sep=";")
+  branch_sector_fpt_matrix = lsnr:::MatrixMAT
 
   for(i in 1:nrow(nva_fpt_data))
   {

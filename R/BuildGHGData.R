@@ -12,16 +12,13 @@
 #'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
 #' BuildGHGData(max(FetchDataAvailability("GHG"))
-#' @export
-
-source('R/InseeDataManager.R')
+#' @noRd
 
 build_branches_nva_fpt_ghg = function(year)
 {
   # -------------------------------------------------- #
 
-  wd = getwd()
-  branches = read.csv(paste0(wd,"/lib/","Branches.csv"), header=T, sep=";")
+  branches = lsnr:::Branches
 
   # get branches aggregates -------------------------- #
 
@@ -92,8 +89,7 @@ build_branches_nva_fpt_ghg = function(year)
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
 
-  wd = getwd()
-  branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixGHG.csv"), header=T, sep=";")
+  branch_sector_fpt_matrix = lsnr:::MatrixGHG
 
   for(i in 1:nrow(nva_fpt_data))
   {

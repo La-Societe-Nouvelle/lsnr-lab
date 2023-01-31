@@ -15,22 +15,19 @@
 #'
 #' @examples
 #' buildDivisions("ECO",2019)
-#'
 #' @export
-
-source('R/BuildBranchesData.R')
 
 build_divisions_fpt = function(indicator,year)
 {
-  wd = getwd()
-  path = paste0(wd,"/lib/","Divisions.csv")
 
-  divisions = read.csv(path, header=T, sep=";")
+  indicator = tolower(as.character(indicator))
+
+  divisions = lsnr:::Divisions
 
   # divisions_aggregates = get_divisions_aggregates(year)
 
   # build branches data
-  fpt_branches = buildBranchesData(toupper(Indicator), year)
+  fpt_branches = build_branches_fpt(indicator, year)
 
   # get nva data
   nva_fpt = get_divisions_nva_fpt(indicator,year)
@@ -51,7 +48,7 @@ build_divisions_fpt = function(indicator,year)
     pivot_longer(!DIV, names_to = "AGGREGATE", values_to = "VALUE") %>%
     mutate(AGGREGATE = str_remove(AGGREGATE,"_FPT"))
 
-  indic_metadata = read.csv(paste0(wd,"/lib/","IndicatorsMetadata.csv"), header=T, sep=";")
+  indic_metadata = lsnr:::IndicatorsMetadata
 
   output_2$YEAR = year
   output_2$UNIT = indic_metadata$UNIT[indic_metadata$CODE==toupper(indicator)]

@@ -11,9 +11,7 @@
 #'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
 #' BuildHAZData(max(FetchDataAvailability("HAZ"))
-#' @export
-
-source('R/InseeDataManager.R')
+#' @noRd
 
 build_branches_nva_fpt_haz = function(selectedYear)
 {
@@ -71,8 +69,7 @@ build_branches_nva_fpt_haz = function(selectedYear)
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
 
-  wd = getwd()
-  branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixHAZ.csv"), header=T, sep=";")
+  branch_sector_fpt_matrix = lsnr:::MatrixHAZ
 
   haz_dmc_qnt = prodcom_data$value[prodcom_data$aggregate=="PRODQNT"] + prodcom_data$value[prodcom_data$aggregate=="IMPQNT"] - prodcom_data$value[prodcom_data$aggregate=="EXPQNT"]
   print(haz_dmc_qnt)

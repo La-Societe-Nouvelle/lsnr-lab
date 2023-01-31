@@ -11,9 +11,8 @@
 #'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
 #' BuildARTData(max(FetchDataAvailability("ART"))
-#' @export
+#' @noRd
 
-source('R/InseeDataManager.R')
 
 build_branches_nva_fpt_art = function(year)
 {

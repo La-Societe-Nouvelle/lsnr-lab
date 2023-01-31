@@ -10,26 +10,4 @@
 #' @importFrom tidyr pivot_wider
 #' @importFrom utils read.csv
 ## usethis namespace: end
-
-setwd("C:/Users/sylva/Documents/La Société Nouvelle/lsnr")
-wd = getwd()
-print(wd)
-
-#list.files()
-
-source("R/DataBuilder.R")
-source("R/BuildBranchesData.R")
-
-print("start")
-#test = buildBranchesData("art", 2015)
-tryCatch({
-  test = suppressWarnings(buildBranchesData("haz","2017"))
-  print(test)
-}, warning = function(war) {
-  print(war$message)
-}, error = function(err) {
-  print(err$message)
-})
-
-
-# abs(difftime(file.info(path)$ctime,Sys.time(),units="days"))>7
+NULL

@@ -14,23 +14,17 @@
 #'
 #' @examples
 #' buildBranchesData("ECO",2019)
-#'
 #' @export
 
-source('R/FetchDataAvailability.R')
-source('R/DataBuilder.R')
-
-
-buildBranchesData = function(indicator, year)
+build_branches_fpt = function(indicator, year)
 {
+  indicator = tolower(as.character(indicator))
+
   print(paste0("Start building data for indicator ",indicator," for year ",year))
 
   options(warn = -1)
 
-  wd = getwd()
-  path = paste0(wd,"/lib/","Branches.csv")
-
-  branches = read.csv(path, header=T, sep=";")
+  branches = lsnr:::Branches
 
   #Fetch all economic and financial raw data needed in order to complete computations process
 
@@ -202,7 +196,7 @@ buildBranchesData = function(indicator, year)
     pivot_longer(!BRANCH, names_to = "AGGREGATE", values_to = "VALUE") %>%
     mutate(AGGREGATE = str_remove(AGGREGATE,"_FPT"))
 
-  indic_metadata = read.csv(paste0(wd,"/lib/","IndicatorsMetadata.csv"), header=T, sep=";")
+  indic_metadata = lsnr:::IndicatorsMetadata
 
   output_2$YEAR = year
   output_2$UNIT = indic_metadata$UNIT[indic_metadata$CODE==toupper(indicator)]
