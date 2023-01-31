@@ -10,6 +10,9 @@
 #' @importFrom tidyr pivot_wider
 #' @importFrom utils read.csv
 ## usethis namespace: end
+<<<<<<< HEAD
+NULL
+=======
 
 setwd("C:/Users/sylva/Documents/La Société Nouvelle/lsnr")
 wd = getwd()
@@ -34,3 +37,4 @@ tryCatch({
 
 
 # abs(difftime(file.info(path)$ctime,Sys.time(),units="days"))>7
+>>>>>>> 861152fe4597143143ebda2ccc7843a80d4f6b35

@@ -13,9 +13,9 @@
 #'
 #' @examples
 #' BuildWATData(max(FetchDataAvailability("WAT"))
-#' @export
+#' @noRd
 
-source('R/InseeDataManager.R')
+
 
 build_branches_nva_fpt_wat = function(selectedYear)
 {
@@ -74,8 +74,7 @@ build_branches_nva_fpt_wat = function(selectedYear)
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
 
-  wd = getwd()
-  branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixWAT.csv"), header=T, sep=";")
+  branch_sector_fpt_matrix = lsnr:::MatrixWAT
 
   for(i in 1:nrow(nva_fpt_data))
   {

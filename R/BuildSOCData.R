@@ -11,9 +11,7 @@
 #'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
 #' BuildSOCData(max(FetchDataAvailability("SOC"))
-#' @export
-
-source('R/InseeDataManager.R')
+#' @noRd
 
 build_branches_nva_fpt_soc = function(selectedYear)
 {
@@ -23,6 +21,9 @@ build_branches_nva_fpt_soc = function(selectedYear)
 
   # fetch data --------------------------------------- #
 
+<<<<<<< HEAD
+  ess_data = lsnr:::SOC_DATA
+=======
   tryCatch({
     ess_data = as.data.frame(cbind(branches_aggregates$BRANCH))
     colnames(ess_data) = c("BRANCH")
@@ -36,6 +37,7 @@ build_branches_nva_fpt_soc = function(selectedYear)
   }, error = function(e) {
     stop(paste0("Données indisponibles pour ",selectedYear))
   })
+>>>>>>> 861152fe4597143143ebda2ccc7843a80d4f6b35
 
   # build nva fpt dataframe -------------------------- #
 

@@ -12,7 +12,7 @@
 #'
 #' @export
 
-getIndicatorList = function(){
+get_indicator_list = function(){
 
   indicator_list = t(matrix(data = c(
     "ART", "Contribution to crafts and skills", "Contribution aux Métiers d'Art et aux Savoir-Faire", "percentage", "%", "P100","Insee and DGE",1,

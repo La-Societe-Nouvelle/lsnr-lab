@@ -12,9 +12,7 @@
 #'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
 #' BuildDISData(max(FetchDataAvailability("DIS"))
-#' @export
-
-source('R/InseeDataManager.R')
+#' @noRd
 
 build_branches_nva_fpt_dis = function(year)
 {

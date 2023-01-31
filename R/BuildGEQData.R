@@ -12,9 +12,7 @@
 #'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
 #' BuildGEQData(max(FetchDataAvailability("GEQ"))
-#' @export
-
-source('R/InseeDataManager.R')
+#' @noRd
 
 build_branches_nva_fpt_geq = function(selectedYear)
 {
@@ -56,8 +54,7 @@ build_branches_nva_fpt_geq = function(selectedYear)
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
 
-  wd = getwd()
-  branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixGEQ.csv"), header=T, sep=";")
+  branch_sector_fpt_matrix = lsnr:::MatrixGEQ
 
   for(i in 1:nrow(nva_fpt_data))
   {
@@ -115,8 +112,12 @@ build_divisions_nva_fpt_geq = function(selectedYear)
   nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
   colnames(nva_fpt_data) = c("DIVISION", "NVA")
 
+<<<<<<< HEAD
+  branch_sector_fpt_matrix = lsnr:::MatrixGEQ
+=======
   wd = getwd()
   division_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","DivisionMappingGEQ.csv"), header=T, sep=";")
+>>>>>>> 861152fe4597143143ebda2ccc7843a80d4f6b35
 
   for(i in 1:nrow(nva_fpt_data))
   {
