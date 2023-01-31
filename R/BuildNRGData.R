@@ -75,6 +75,8 @@ build_branches_nva_fpt_nrg = function(selectedYear)
   sector_fpt_list[["M69-M71"]] = sum(ac_pefasu_data$values[ac_pefasu_data$nace_r2 %in% c("M69_M70","M71")]) / branches_aggregates$NVA[branches_aggregates$BRANCH=="MA"]
   # MC / M73-M75
   sector_fpt_list[["M73-M75"]] = sum(ac_pefasu_data$values[ac_pefasu_data$nace_r2 %in% c("M73","M74_M75")]) / branches_aggregates$NVA[branches_aggregates$BRANCH=="MC"]
+  # TZ
+  sector_fpt_list[["T"]] = 0
 
   sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(sector_fpt_list))
   colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
