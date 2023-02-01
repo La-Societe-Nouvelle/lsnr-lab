@@ -21,9 +21,8 @@ build_branches_nva_fpt_soc = function(selectedYear)
 
   # fetch data --------------------------------------- #
 
-<<<<<<< HEAD
   ess_data = lsnr:::SOC_DATA
-=======
+
   tryCatch({
     # for loop to fetch data for each branch
     res = GET("https://api.lasocietenouvelle.org/serie/SIRENE_ESS_LEGALUNITS_P100_FRA_BRANCH")
@@ -32,7 +31,6 @@ build_branches_nva_fpt_soc = function(selectedYear)
   }, error = function(e) {
     stop(paste0("Données indisponibles pour ",selectedYear))
   })
->>>>>>> 861152fe4597143143ebda2ccc7843a80d4f6b35
 
   # build nva fpt dataframe -------------------------- #
 

@@ -112,12 +112,9 @@ build_divisions_nva_fpt_geq = function(selectedYear)
   nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
   colnames(nva_fpt_data) = c("DIVISION", "NVA")
 
-<<<<<<< HEAD
   branch_sector_fpt_matrix = lsnr:::MatrixGEQ
-=======
-  wd = getwd()
-  division_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","DivisionMappingGEQ.csv"), header=T, sep=";")
->>>>>>> 861152fe4597143143ebda2ccc7843a80d4f6b35
+
+  division_sector_fpt_matrix = lsnr:::"DivisionMappingGEQ.csv"
 
   for(i in 1:nrow(nva_fpt_data))
   {
@@ -145,9 +142,9 @@ get_branches_imp_coef_geq = function(selectedYear)
     filters = list(geo=c("FR","EU28"), age="TOTAL", indic_se="MEAN_E_EUR", isco08="TOTAL", worktime="TOTAL", time=selectedYear, nace_r2="B-S_X_O")
   )
 
-  ses_data = eurostat_data %>% 
+  ses_data = eurostat_data %>%
     pivot_wider(names_from = sex, values_from = values)
-  
+
   fpt_fra = abs(ses_data$F[ses_data$geo=="FR"] - ses_data$M[ses_data$geo=="FR"]) / ses_data$T[ses_data$geo=="FR"] *100 # index for France
   fpt_euu = abs(ses_data$F[ses_data$geo=="EU28"] - ses_data$M[ses_data$geo=="EU28"]) / ses_data$T[ses_data$geo=="EU28"] *100 # index for EU
 

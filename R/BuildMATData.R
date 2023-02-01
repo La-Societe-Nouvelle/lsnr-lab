@@ -11,7 +11,7 @@
 #' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}},
 #'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
-#' BuildMATData(max(FetchDataAvailability("MAT"))
+#' build_branches_nva_fpt_mat(2018)
 #' @noRd
 
 
@@ -112,8 +112,7 @@ build_divisions_nva_fpt_mat = function(selectedYear)
   nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
   colnames(nva_fpt_data) = c("DIVISION", "NVA")
 
-  wd = getwd()
-  branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","DivisionMappingMAT.csv"), header=T, sep=";")
+  branch_sector_fpt_matrix = lsnr:::DivisionMappingMAT
 
   for(i in 1:nrow(nva_fpt_data))
   {

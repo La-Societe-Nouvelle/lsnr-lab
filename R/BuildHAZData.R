@@ -103,7 +103,7 @@ build_divisions_nva_fpt_haz = function(selectedYear)
 {
   # get branches aggregates -------------------------- #
 
-  divisions_aggregates = get_divisions_aggregates(selectedYear) 
+  divisions_aggregates = get_divisions_aggregates(selectedYear)
 
   # sector fpt --------------------------------------- #
 
@@ -114,8 +114,7 @@ build_divisions_nva_fpt_haz = function(selectedYear)
   nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
   colnames(nva_fpt_data) = c("DIVISION", "NVA")
 
-  wd = getwd()
-  divisions = read.csv(paste0(wd,"/lib/","Divisions.csv"), header=T, sep=";")
+  divisions = lsnr:::Divisions
 
   for(i in 1:nrow(nva_fpt_data))
   {
@@ -143,13 +142,13 @@ get_branches_imp_coef_haz = function(selectedYear)
   res_impqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_IMPQNT_PRODCOM_FRA_T")
   res_expqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_EXPQNT_PRODCOM_FRA_T")
 
-  data_prodqnt_fra = fromJSON(rawToChar(res_prodqnt$content))$data %>% 
+  data_prodqnt_fra = fromJSON(rawToChar(res_prodqnt$content))$data %>%
     mutate(aggregate = "PRODQNT") %>%
     mutate(area = "FRA")
-  data_impqnt_fra = fromJSON(rawToChar(res_impqnt$content))$data %>% 
+  data_impqnt_fra = fromJSON(rawToChar(res_impqnt$content))$data %>%
     mutate("aggregate" = "IMPQNT") %>%
     mutate(area = "FRA")
-  data_expqnt_fra = fromJSON(rawToChar(res_expqnt$content))$data %>% 
+  data_expqnt_fra = fromJSON(rawToChar(res_expqnt$content))$data %>%
     mutate("aggregate" = "EXPQNT") %>%
     mutate(area = "FRA")
 
@@ -158,16 +157,16 @@ get_branches_imp_coef_haz = function(selectedYear)
   res_impqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_IMPQNT_PRODCOM_EUU_T")
   res_expqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_EXPQNT_PRODCOM_EUU_T")
 
-  data_prodqnt_euu = fromJSON(rawToChar(res_prodqnt$content))$data %>% 
+  data_prodqnt_euu = fromJSON(rawToChar(res_prodqnt$content))$data %>%
     mutate(aggregate = "PRODQNT") %>%
     mutate(area = "EUU")
-  data_impqnt_euu = fromJSON(rawToChar(res_impqnt$content))$data %>% 
+  data_impqnt_euu = fromJSON(rawToChar(res_impqnt$content))$data %>%
     mutate("aggregate" = "IMPQNT")%>%
     mutate(area = "EUU")
-  data_expqnt_euu = fromJSON(rawToChar(res_expqnt$content))$data %>% 
+  data_expqnt_euu = fromJSON(rawToChar(res_expqnt$content))$data %>%
     mutate("aggregate" = "EXPQNT")%>%
     mutate(area = "EUU")
-  
+
   prodcom_data = data_prodqnt_fra %>%
     rbind(data_impqnt_fra) %>%
     rbind(data_expqnt_fra) %>%
@@ -189,6 +188,6 @@ get_branches_imp_coef_haz = function(selectedYear)
   fpt_wld =  wdi_data$EN.ATM.CO2E.KD.GD[wdi_data$iso2c=="1W"]
 
   branches_imp_coef = fpt_wld / fpt_fra
-  
+
   return(branches_imp_coef)
 }

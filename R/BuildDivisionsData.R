@@ -9,6 +9,11 @@
 #' @param year year of requested data.
 #' @param indicator requested non-financial dimension.
 #'
+#' @importFrom dplyr %>%
+#' @importFrom dplyr mutate
+#' @importFrom tidyr pivot_wider
+#' @importFrom stringr str_remove
+#'
 #' @return A table of macroeconomic footprint values by economic activities division.
 #'
 #' @seealso \code{\link{buildBranchesData}}, \code{\link{getIndicatorList}}, \code{\link{buildDiscountedData}}.
@@ -35,13 +40,15 @@ build_divisions_fpt = function(indicator,year)
   # divisions fpt
   fpt_divisions = get_empty_divisions_fpt(divisions)
 
+  divisions_aggregates = get_divisions_aggregates(year)
+
   for(i in 1:nrow(fpt_divisions))
   {
     branch = divisions$BRANCH[i]
     fpt_divisions$NVA_FPT[i] = nva_fpt$FOOTPRINT[i]
-    fpt_divisions$IC_FPT[i]  = fpt_branches$IC_FPT[fpt_branches$BRANCH==branch]
-    fpt_divisions$CFC_FPT[i]  = fpt_branches$CFC_FPT[fpt_branches$BRANCH==branch]
-    fpt_divisions$PRD_FPT[i] = (nva_fpt$FOOTPRINT[i]*divisions_aggregates$NVA[i] + fpt_branches$IC_FPT[i]*divisions_aggregates$IC[i] + fpt_divisions$CFC_FPT[i]*divisions_aggregates$CFC[i]) / divisions_aggregates$PRD[i]
+    fpt_divisions$IC_FPT[i]  = as.numeric(fpt_branches %>% filter(BRANCH == branch & AGGREGATE == "IC") %>% select(VALUE))
+    fpt_divisions$CFC_FPT[i]  = as.numeric(fpt_branches %>% filter(BRANCH == branch & AGGREGATE == "CFC") %>% select(VALUE))
+    fpt_divisions$PRD_FPT[i] = (fpt_divisions$NVA_FPT[i]*divisions_aggregates$NVA[i] + fpt_divisions$IC_FPT[i]*divisions_aggregates$IC[i] + fpt_divisions$CFC_FPT[i]*divisions_aggregates$CFC[i]) / divisions_aggregates$PRD[i]
   }
 
   output_2 = fpt_divisions %>%
@@ -59,7 +66,7 @@ build_divisions_fpt = function(indicator,year)
 
 get_empty_divisions_fpt = function(divisions)
 {
-  fpt_divisions = as.data.frame(divisions$CODE)
+  fpt_divisions = as.data.frame(divisions$DIVISION)
   names(fpt_divisions)="DIV"
   fpt_divisions[,c('NVA_FPT','IC_FPT','CFC_FPT','PRD_FPT')] = c(0,0,0,0)
   return(fpt_divisions)

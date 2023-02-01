@@ -45,8 +45,7 @@ build_divisions_nva_fpt_eco = function(selectedYear)
 
   # build nva fpt dataframe -------------------------- #
 
-  nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
-  colnames(nva_fpt_data) = c("DIVISION", "NVA")
+  nva_fpt_data = data.frame(DIVISION = divisions_aggregates$CNA_ACTIVITE, NVA = divisions_aggregates$NVA)
 
   for(i in 1:nrow(nva_fpt_data))
   {

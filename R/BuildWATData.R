@@ -138,8 +138,7 @@ build_divisions_nva_fpt_wat = function(selectedYear)
   nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
   colnames(nva_fpt_data) = c("DIVISION", "NVA")
 
-  wd = getwd()
-  division_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","DivisionMappingWAT.csv"), header=T, sep=";")
+  division_sector_fpt_matrix = lsnr:::DivisionMappingWAT
 
   for(i in 1:nrow(nva_fpt_data))
   {

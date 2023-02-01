@@ -16,14 +16,7 @@
 #' buildBranchesData("ECO",2019)
 #' @export
 
-<<<<<<< HEAD
 build_branches_fpt = function(indicator, year)
-=======
-source('R/DataBuilder.R')
-
-
-buildBranchesData = function(indicator, year)
->>>>>>> 861152fe4597143143ebda2ccc7843a80d4f6b35
 {
   indicator = tolower(as.character(indicator))
 
@@ -133,7 +126,7 @@ buildBranchesData = function(indicator, year)
     next_prd_fpt = update_prd_fpt(fpt_branches,branches_aggregates)
     fpt_branches$PRD_FPT = next_prd_fpt
     #print(fpt_branches)
-    
+
     #print(fpt_branches)
 
     isResultsStables = checkResultsStables(prev_fpt_branches,fpt_branches) && nbIterations > 1

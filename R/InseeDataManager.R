@@ -6,6 +6,8 @@
 #' @return A `data.frame` object containing annual Insee supply-use equilibrium data.
 #' @importFrom dplyr %>%
 #' @importFrom dplyr select
+#' @importFrom dplyr mutate
+#' @importFrom dplyr arrange
 #' @importFrom insee get_insee_dataset
 #' @importFrom tidyr pivot_wider
 #' @importFrom stringr str_remove
@@ -74,7 +76,7 @@ get_products_aggregates = function(year)
     replace(is.na(.),0)
 
   # build products aggregates frame
-  products_aggregates = as.data.frame(ere_data$CNA_PRODUIT)
+  products_aggregates = data.frame(CNA_PRODUIT = as.character(ere_data$CNA_PRODUIT))
   for(i in 1:nrow(ere_data))
   {
     products_aggregates$RESS[i] = ere_data$P1[i]
@@ -162,53 +164,39 @@ get_divisions_aggregates = function(year)
     select(CNA_ACTIVITE, OPERATION, OBS_VALUE) %>%
     pivot_wider(names_from = OPERATION, values_from = OBS_VALUE) %>%
     mutate(CNA_ACTIVITE = str_remove(CNA_ACTIVITE,"A88-")) %>%
-    arrange(CNA_ACTIVITE)
+    arrange(CNA_ACTIVITE) %>%
+    mutate(CFC = 0,
+           NVA = 0)
 
-  # fetch data (PAT NAF)
-  insee_ccf_data = get_insee_dataset(
-    "CNA-2014-PAT-NF",
-    startPeriod = year,
-    endPeriod = year,
-    filter="A....VAL.AN11...CCF.."
-  )
 
-  ccf_data = insee_ccf_data %>%
-    filter(substr(CNA_ACTIVITE,1,3)=="A38") %>%
-    select(CNA_ACTIVITE, OPERATION, OBS_VALUE) %>%
-    pivot_wider(names_from = OPERATION, values_from = OBS_VALUE) %>%
-    mutate(CNA_ACTIVITE = str_remove(CNA_ACTIVITE,"A38-")) %>%
-    arrange(CNA_ACTIVITE)
+  divisions = lsnr:::Divisions
+  branches_aggregates = get_branches_aggregates(year)
 
-  # Build branches aggregates frame
-  branches_aggregates = as.data.frame(cpeb_data$CNA_ACTIVITE)
-  names(branches_aggregates)=c("BRANCH")
-  for (i in 1:nrow(branches_aggregates))
-  {
-    branch = branches_aggregates$BRANCH[i]
-    branches_aggregates$PRD[i] = cpeb_data$P1[i]
-    branches_aggregates$IC[i]  = cpeb_data$P2[i]
-    branches_aggregates$CFC[i] = ccf_data$AN11[i]
-    branches_aggregates$NVA[i] = cpeb_data$B1G[i] - ccf_data$AN11[i]
+  #Assign CFC amount for division by extending CFC rate of the branch
+
+  for(i in unique(branches_aggregates$BRANCH)){
+
+    r = which(branches_aggregates$BRANCH == i)
+    divs = which(cpeb_data$CNA_ACTIVITE %in% divisions$DIVISION[divisions$BRANCH == i])
+
+    ccf_rate = branches_aggregates$CFC[r] / (branches_aggregates$CFC[r] + branches_aggregates$NVA[r])
+    ccf_rate = ifelse(is.nan(ccf_rate),0,ccf_rate)
+
+    cpeb_data$CFC[divs] = round(cpeb_data$B1G[divs] * ccf_rate,1)
+    cpeb_data$NVA[divs] = round(cpeb_data$B1G[divs] * (1 - ccf_rate),1)
   }
 
-  # temp correction
-  branches_aggregates$IC[37] = 0
-  branches_aggregates$CFC[37] = 0
-  branches_aggregates$NVA[37] = 0
+  names(cpeb_data)[which(names(cpeb_data) %in% c("P1","P2","B1G"))] = c("PRD","IC","GVA")
 
-  return(branches_aggregates)
+  return(cpeb_data)
 }
 
 ###############################################################################################################
 ################################################## IC MATRIX ##################################################
 
-<<<<<<< HEAD
-get_ic_matrix = function(year)
-=======
 # Composition of intermediate consumptions (columns) by products (rows)
 
-get_ic_matrix = function(year) 
->>>>>>> 861152fe4597143143ebda2ccc7843a80d4f6b35
+get_ic_matrix = function(year)
 {
 
   # fetch data
@@ -219,12 +207,8 @@ get_ic_matrix = function(year)
   )
 
   tei_data = insee_tei_data %>%
-<<<<<<< HEAD
     filter(substr(CNA_ACTIVITE,1,3)=="A38") %>%
-=======
-    filter(substr(CNA_ACTIVITE,1,3)=="A38") %>% 
-    filter(substr(CNA_PRODUIT,1,3)=="A38") %>% 
->>>>>>> 861152fe4597143143ebda2ccc7843a80d4f6b35
+    filter(substr(CNA_PRODUIT,1,3)=="A38") %>%
     select(CNA_ACTIVITE, CNA_PRODUIT, OBS_VALUE) %>%
     mutate(CNA_ACTIVITE = str_remove(CNA_ACTIVITE,"A38-")) %>%
     mutate(CNA_PRODUIT = str_remove(CNA_PRODUIT,"A38-")) %>%
@@ -301,17 +285,14 @@ get_cfc_matrix = function (year)
 
   ccf_data = insee_ccf_data %>%
     filter(substr(CNA_ACTIVITE,1,3)=="A38") %>%
-<<<<<<< HEAD
-=======
     mutate(CNA_ACTIVITE = str_remove(CNA_ACTIVITE,"A38-")) %>%
     mutate(OPERATION = str_remove(OPERATION,"_SEC10")) %>%
->>>>>>> 861152fe4597143143ebda2ccc7843a80d4f6b35
     select(CNA_ACTIVITE, OPERATION, OBS_VALUE) %>%
     pivot_wider(names_from = OPERATION, values_from = OBS_VALUE) %>%
     arrange(CNA_ACTIVITE) %>%
     replace(is.na(.),0) %>%
-    mutate(AN1173_SEC10 = AN117_SEC10 - AN1171_SEC10 - AN1174_SEC10) %>%
-    select(!"AN117_SEC10")
+    mutate(AN1173 = AN117 - AN1171 - AN1174) %>%
+    select(!"AN117")
 
   # fetch data (ENC)
   insee_enc_data = get_insee_dataset(
@@ -332,7 +313,6 @@ get_cfc_matrix = function (year)
 
   # build cfc matrix
   cfc_matrix = as.data.frame(ccf_data[,1])
-<<<<<<< HEAD
   for (j in 1:nrow(cfc_matrix))
   {
     product = cfc_matrix$CNA_ACTIVITE[j]
@@ -381,12 +361,11 @@ get_cfc_matrix = function (year)
         cfc_matrix[i,product] = ccf_data$AN1173_SEC10[i] / ccf_data$AN11[i]
       }
 
-      # MB <- AN1174
-      if (product=="MB") {
+      # RZ <- AN1174
+      if (product=="RZ") {
         cfc_matrix[i,product] = ccf_data$AN1174_SEC10[i] / ccf_data$AN11[i]
       }
     }
-=======
 
   for (j in 1:nrow(cfc_matrix)) # column -> branch
   {
@@ -395,7 +374,7 @@ get_cfc_matrix = function (year)
     cfc_matrix[,branch] = c(0)
 
     cfc_branch = ccf_data$AN11[j]
-    cfc_branch_balance = ccf_data$AN11[j]- ccf_data$AN1121[j] - ccf_data$AN1122[j] - ccf_data$AN114[j] - ccf_data$AN117[j]
+    cfc_branch_balance = ccf_data$AN11[j]- ccf_data$AN1121[j] - ccf_data$AN1122[j] - ccf_data$AN114[j] - ccf_data$AN1171[j] - ccf_data$AN1173[j]- ccf_data$AN1174[j]
     total_enc = enc_data$AN111[j] + enc_data$AN1131[j] + enc_data$AN1132[j] + enc_data$AN1139[j] + enc_data$AN115[j]
 
     # cfc by product (SEC10)
@@ -406,8 +385,11 @@ get_cfc_matrix = function (year)
     cfc_branch_an1139 = (enc_data$AN1139[j] / total_enc) * cfc_branch_balance  # part of branch cfc balance
     cfc_branch_an114 = ccf_data$AN114[j]
     cfc_branch_an115 = (enc_data$AN115[j] / total_enc) * cfc_branch_balance  # part of branch cfc balance
-    cfc_branch_an117 = ccf_data$AN117[j]
-    
+    cfc_branch_an1171 = ccf_data$AN1171[j]
+    cfc_branch_an1173 = ccf_data$AN1173[j]
+    cfc_branch_an1174 = ccf_data$AN1174[j]
+
+
     # cfc coef by product (A38)
     cfc_matrix[cfc_matrix$CNA_ACTIVITE=="AZ",branch] = cfc_branch_an115 / cfc_branch
     cfc_matrix[cfc_matrix$CNA_ACTIVITE=="FZ",branch] = (cfc_branch_an111+cfc_branch_an112) / cfc_branch
@@ -415,8 +397,10 @@ get_cfc_matrix = function (year)
     cfc_matrix[cfc_matrix$CNA_ACTIVITE=="CI",branch] = cfc_branch_an1132 / cfc_branch
     cfc_matrix[cfc_matrix$CNA_ACTIVITE=="CK",branch] = cfc_branch_an1139 / cfc_branch
     cfc_matrix[cfc_matrix$CNA_ACTIVITE=="CL",branch] = cfc_branch_an1131 / cfc_branch
-    cfc_matrix[cfc_matrix$CNA_ACTIVITE=="MB",branch] = cfc_branch_an117 / cfc_branch
->>>>>>> 861152fe4597143143ebda2ccc7843a80d4f6b35
+    cfc_matrix[cfc_matrix$CNA_ACTIVITE=="MB",branch] = cfc_branch_an1171 / cfc_branch
+    cfc_matrix[cfc_matrix$CNA_ACTIVITE=="JC",branch] = cfc_branch_an1171 / cfc_branch
+    cfc_matrix[cfc_matrix$CNA_ACTIVITE=="RZ",branch] = cfc_branch_an1171 / cfc_branch
+
   }
 
   cfc_matrix$TZ = c(0)
@@ -424,6 +408,8 @@ get_cfc_matrix = function (year)
   cfc_matrix$CNA_ACTIVITE[37] = 'TZ'
   names(cfc_matrix)[names(cfc_matrix) == 'CNA_ACTIVITE'] = 'BRANCH'
 
+  return(cfc_matrix)
+  }
   return(cfc_matrix)
 }
 
@@ -434,10 +420,6 @@ get_cfc_matrix = function (year)
 
 get_transfers_matrix = function(year)
 {
-<<<<<<< HEAD
-
-=======
->>>>>>> 861152fe4597143143ebda2ccc7843a80d4f6b35
   dom = read.csv(paste0("https://raw.githubusercontent.com/La-Societe-Nouvelle/LaSocieteNouvelle-defautdata/master/DefaultData-LSN/donnees/tess_",year,"_dom.csv"),sep=";")
   names(dom)=dom[8,]
   dom = dom[-c(1:7),-1]

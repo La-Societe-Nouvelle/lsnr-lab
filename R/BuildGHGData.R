@@ -6,6 +6,8 @@
 #' @param Year Considered year.
 #'
 #' @importFrom WDI WDI
+#' @importFrom jsonlite fromJSON
+#' @importFrom httr GET
 #' @return An object `list` made up of 5 elements : value added impacts by French branches,
 #' imported products associated coefficient, data sources, values unit and value added impacts by French divisions.
 #' @seealso \code{\link{BuildECOData}}, \code{\link{BuildNRGData}},
@@ -26,33 +28,29 @@ build_branches_nva_fpt_ghg = function(selectedYear)
 
   # fetch data --------------------------------------- #
 
-  tryCatch({
+  set=c("A","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31_C32","C33",
+        "D","E","F","G","H","I","J","J58","J59_J60","J61","J62_J63","K","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","O","P","Q","Q86","Q87_Q88",
+        "R","S","T","TOTAL")
 
-    set1=c("A","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31_C32","C33","D","E","F","G","H","I","J","J58","J59_J60","J61","J62_J63","K","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","O","P","Q","Q86","Q87_Q88","R")
-    eurostat_data_1 = get_eurostat(
-      "env_ac_ainah_r2",
-      time_format = "num",
-      filters = list(geo="FR", unit="T", time=selectedYear, airpol="GHG", nace_r2=set1)
-    )
+  main = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_ac_ainah_r2"
+  filters = "?geo=FR&unit=T&time=2018&airpol=GHG&"
+  nace = paste0("nace_r2=",set, collapse = "&")
 
-    set2=c("S","T","TOTAL")
-    eurostat_data_2 = get_eurostat(
-      "env_ac_ainah_r2",
-      time_format = "num",
-      filters = list(geo="FR", unit="T", time=selectedYear, airpol="GHG", nace_r2=set2)
-    )
+  eurostat_response = GET(paste0(main,filters,nace))
 
-  }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table env_ac_ainah_r2)"))
-  })
+  ac_ainah_data = data.frame(values = unlist(fromJSON(rawToChar(eurostat_response$content))$value))
 
-  ac_ainah_data = rbind(eurostat_data_1,eurostat_data_2)
+  eurostat_index = unlist(fromJSON(rawToChar(eurostat_response$content))$dimension$nace_r2$category$index)
+
+  for(i in 1:nrow(ac_ainah_data)){
+    ac_ainah_data$nace_r2[i] = names(eurostat_index)[eurostat_index == row.names(eurostat_data)[i]]
+  }
 
   # sector fpt --------------------------------------- #
 
   sector_fpt_list = list()
 
-  for (i in 1:nrow(branches)) 
+  for (i in 1:nrow(branches))
   {
     code_nace = branches$NACE_R2[i]
     if (code_nace %in% ac_ainah_data$nace_r2) {
@@ -113,8 +111,7 @@ build_divisions_nva_fpt_ghg = function(selectedYear)
 {
   # -------------------------------------------------- #
 
-  wd = getwd()
-  divisions = read.csv(paste0(wd,"/lib/","Divisions.csv"), header=T, sep=";")
+  divisions = lsnr:::Divisions
 
   # get divisions aggregates ------------------------- #
 
@@ -122,35 +119,32 @@ build_divisions_nva_fpt_ghg = function(selectedYear)
 
   # fetch data --------------------------------------- #
 
-  tryCatch({
+  set=c("A","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31_C32","C33",
+        "D","E","F","G","H","I","J","J58","J59_J60","J61","J62_J63","K","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","O","P","Q","Q86","Q87_Q88",
+        "R","S","T","TOTAL")
 
-    set1=c("A","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31_C32","C33","D","E","F","G","H","I","J","J58","J59_J60","J61","J62_J63","K","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","O","P","Q","Q86","Q87_Q88","R")
-    eurostat_data_1 = get_eurostat(
-      "env_ac_ainah_r2",
-      time_format = "num",
-      filters = list(geo="FR", unit="T", time=selectedYear, airpol="GHG", nace_r2=set1)
-    )
+  main = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_ac_ainah_r2"
+  filters = "?geo=FR&unit=T&time=2018&airpol=GHG&"
+  nace = paste0("nace_r2=",set, collapse = "&")
 
-    set2=c("S","T","TOTAL")
-    eurostat_data_2 = get_eurostat(
-      "env_ac_ainah_r2",
-      time_format = "num",
-      filters = list(geo="FR", unit="T", time=selectedYear, airpol="GHG", nace_r2=set2)
-    )
+  eurostat_response = GET(paste0(main,filters,nace))
 
-  }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table env_ac_ainah_r2)"))
-  })
+  ac_ainah_data = data.frame(values = unlist(fromJSON(rawToChar(eurostat_response$content))$value))
 
-  ac_ainah_data = rbind(eurostat_data_1,eurostat_data_2)
+  eurostat_index = unlist(fromJSON(rawToChar(eurostat_response$content))$dimension$nace_r2$category$index)
+
+  for(i in 1:nrow(ac_ainah_data)){
+    ac_ainah_data$nace_r2[i] = names(eurostat_index)[eurostat_index == row.names(eurostat_data)[i]]
+  }
+
 
   # sector fpt --------------------------------------- #
 
   sector_fpt_list = list()
 
-  for (i in 1:nrow(divisions)) 
+  for (i in 1:nrow(divisions))
   {
-    code_nace = divisions$NACE_R2[i]
+    code_nace = divisions$DIVISION[i]
     if (code_nace %in% ac_ainah_data$nace_r2) {
       if (divisions_aggregates$NVA[i]>0) {
         sector_fpt_list[[code_nace]] = ac_ainah_data$values[ac_ainah_data$nace_r2==code_nace] / divisions_aggregates$NVA[i]
@@ -161,17 +155,15 @@ build_divisions_nva_fpt_ghg = function(selectedYear)
     }
   }
 
-  sector_fpt = cbind.data.frame(sector_fpt_list) %>% 
+  sector_fpt = cbind.data.frame(sector_fpt_list) %>%
     pivot_longer(cols = names(sector_fpt_list))
   colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
 
   # build nva fpt dataframe -------------------------- #
 
-  nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
-  colnames(nva_fpt_data) = c("DIVISION", "NVA")
+  nva_fpt_data = data.frame(DIVISION = divisions_aggregates$CNA_ACTIVITE, NVA = divisions_aggregates$NVA)
 
-  wd = getwd()
-  division_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixGHG.csv"), header=T, sep=";")
+  division_sector_fpt_matrix = lsnr:::MatrixGHG
 
   for(i in 1:nrow(nva_fpt_data))
   {

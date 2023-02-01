@@ -94,8 +94,6 @@ build_divisions_nva_fpt_was = function(selectedYear)
 {
   # -------------------------------------------------- #
 
-  wd = getwd()
-
   # get divisions aggregates -------------------------- #
 
   divisions_aggregates = get_divisions_aggregates(selectedYear)
@@ -119,7 +117,8 @@ build_divisions_nva_fpt_was = function(selectedYear)
 
   sector_fpt_list = list()
 
-  branches = read.csv(paste0(wd,"/lib/","Branches.csv"), header=T, sep=";")
+  branches = lsnr:::Branches
+
   branches_aggregates = get_branches_aggregates(selectedYear)
   for (i in 1:nrow(branches)) {
     code_nace = branches$NACE_R2[i]
@@ -147,7 +146,7 @@ build_divisions_nva_fpt_was = function(selectedYear)
   nva_fpt_data = as.data.frame(cbind(divisions_aggregates$BRANCH, divisions_aggregates$NVA))
   colnames(nva_fpt_data) = c("DIVISION", "NVA")
 
-  division_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","DivisionMappingWAS.csv"), header=T, sep=";")
+  division_sector_fpt_matrix = lsnr:::DivisionMappingWAS
 
   for(i in 1:nrow(nva_fpt_data))
   {

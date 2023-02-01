@@ -11,7 +11,7 @@
 #' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}},
 #'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
 #' @examples
-#' BuildKNWData(max(FetchDataAvailability("KNW"))
+#' build_branches_nva_fpt_knw(2018)
 #' @noRd
 
 
@@ -114,8 +114,7 @@ build_divisions_nva_fpt_knw = function(selectedYear)
   nva_fpt_data = as.data.frame(cbind(divisions_aggregates$BRANCH, divisions_aggregates$NVA))
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
 
-  wd = getwd()
-  branch_sector_fpt_matrix = read.csv(paste0(wd,"/lib/","MatrixKNW.csv"), header=T, sep=";")
+  branch_sector_fpt_matrix =lsnr:::MatrixKNW
 
   for(i in 1:nrow(nva_fpt_data))
   {
