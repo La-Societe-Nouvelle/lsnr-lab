@@ -145,12 +145,17 @@ get_branches_imp_coef_haz = function(selectedYear)
   data_prodqnt_fra = fromJSON(rawToChar(res_prodqnt$content))$data %>%
     mutate(aggregate = "PRODQNT") %>%
     mutate(area = "FRA")
+
   data_impqnt_fra = fromJSON(rawToChar(res_impqnt$content))$data %>%
     mutate("aggregate" = "IMPQNT") %>%
     mutate(area = "FRA")
+
   data_expqnt_fra = fromJSON(rawToChar(res_expqnt$content))$data %>%
     mutate("aggregate" = "EXPQNT") %>%
-    mutate(area = "FRA")
+    mutate(area = "FRA") %>%
+    filter(year == selectedYear)
+
+  haz_dmc_qnt_fra = data_prodqnt_fra$value + data_impqnt_fra$value - data_expqnt_fra$value
 
   # prodcom data - EUU
   res_prodqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_PRODQNT_PRODCOM_EUU_T")
@@ -160,9 +165,11 @@ get_branches_imp_coef_haz = function(selectedYear)
   data_prodqnt_euu = fromJSON(rawToChar(res_prodqnt$content))$data %>%
     mutate(aggregate = "PRODQNT") %>%
     mutate(area = "EUU")
+
   data_impqnt_euu = fromJSON(rawToChar(res_impqnt$content))$data %>%
     mutate("aggregate" = "IMPQNT")%>%
     mutate(area = "EUU")
+
   data_expqnt_euu = fromJSON(rawToChar(res_expqnt$content))$data %>%
     mutate("aggregate" = "EXPQNT")%>%
     mutate(area = "EUU")
@@ -175,17 +182,17 @@ get_branches_imp_coef_haz = function(selectedYear)
     rbind(data_expqnt_euu) %>%
     filter(year == selectedYear) # control if empty
 
+
+  haz_dmc_qnt_euu = data_prodqnt_euu$value + data_impqnt_euu$value - data_expqnt_euu$value
+
   # domestic production
   eurostat_nama_data = get_eurostat(
     "nama_10_a64",
-    filters = list(geo=c("FR","EU27_2020"), na_item="B1G", time=year, unit="CP_MEUR", nace_r2="TOTAL")
+    filters = list(geo=c("FR","EU27_2020"), na_item="B1G", time=selectedYear, unit="CP_MEUR", nace_r2="TOTAL")
   )
 
-  print(prodcom_data)
-  print(eurostat_nama_data)
-
-  fpt_fra =  wdi_data$EN.ATM.CO2E.KD.GD[wdi_data$iso2c=="FR"]
-  fpt_wld =  wdi_data$EN.ATM.CO2E.KD.GD[wdi_data$iso2c=="1W"]
+  fpt_fra =  haz_dmc_qnt_fra / eurostat_nama_data$values[eurostat_nama_data$geo=="FR"]
+  fpt_wld =  haz_dmc_qnt_euu / eurostat_nama_data$values[eurostat_nama_data$geo=="EU27_2020"]
 
   branches_imp_coef = fpt_wld / fpt_fra
 

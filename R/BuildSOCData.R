@@ -24,10 +24,15 @@ build_branches_nva_fpt_soc = function(selectedYear)
   ess_data = lsnr:::SOC_DATA
 
   tryCatch({
-    # for loop to fetch data for each branch
-    res = GET("https://api.lasocietenouvelle.org/serie/SIRENE_ESS_LEGALUNITS_P100_FRA_BRANCH")
-    dge_data = fromJSON(rawToChar(res$content))$data %>%
-      filter(dge_data$year == selectedYear)
+    ess_data = as.data.frame(cbind(branches_aggregates$BRANCH))
+    colnames(ess_data) = c("BRANCH")
+    # loop to fetch data for each branch
+    for(i in 1:nrow(branches_aggregates)) 
+    {
+      res = GET(paste0("https://api.lasocietenouvelle.org/serie/SIRENE_ESS_LEGALUNITS_P100_FRA_BRANCH?area=FRA&code=",ess_data$BRANCH[i]))
+      ess_branch_data = fromJSON(rawToChar(res$content))$data %>% filter(year == selectedYear)
+      ess_data$NVA_FPT[i] = ess_branch_data$value
+    }
   }, error = function(e) {
     stop(paste0("Données indisponibles pour ",selectedYear))
   })
@@ -40,9 +45,9 @@ build_branches_nva_fpt_soc = function(selectedYear)
   for(i in 1:nrow(nva_fpt_data))
   {
     # build values
-    nva_fpt_data$GROSS_IMPACT[i] = ess_data$FOOTPRINT[i] * branches_aggregates$NVA[i]
+    nva_fpt_data$GROSS_IMPACT[i] = ess_data$NVA_FPT[i] * branches_aggregates$NVA[i]
     nva_fpt_data$UNIT_GROSS_IMPACT[i] = "CPMEUR"
-    nva_fpt_data$FOOTPRINT[i] = ess_data$FOOTPRINT[i]
+    nva_fpt_data$FOOTPRINT[i] = ess_data$NVA_FPT[i]*100
     nva_fpt_data$UNIT_FOOTPRINT[i] = ess_data$UNIT_FOOTPRINT[i]
   }
 

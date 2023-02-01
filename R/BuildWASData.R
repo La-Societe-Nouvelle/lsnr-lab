@@ -171,7 +171,7 @@ get_branches_imp_coef_was = function(selectedYear)
   eurostat_was_gen_data = get_eurostat(
     "env_wasgen",
     time_format = "num",
-    filters = list(geo=c("FR","EU27_2020"), unit = "T", time = selectedYear, waste = "TOTAL", hazard=="HAZ_NHAZ")
+    filters = list(geo=c("FR","EU27_2020"), unit = "T", time = selectedYear, waste = "TOTAL", hazard="HAZ_NHAZ")
   )
 
   # domestic production

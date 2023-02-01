@@ -35,7 +35,7 @@ build_branches_nva_fpt_art = function(selectedYear)
 
   # sector fpt --------------------------------------- #
 
-  all_sector_fpt = round((dge_data$value / sum(as.numeric(branches_aggregates$NVA))), digits = 3)
+  all_sector_fpt = round((dge_data$value / sum(as.numeric(branches_aggregates$NVA + branches_aggregates$CFC))), digits = 3)
 
   # build nva fpt dataframe -------------------------- #
 

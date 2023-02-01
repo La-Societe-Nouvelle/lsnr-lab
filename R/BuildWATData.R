@@ -40,6 +40,12 @@ build_branches_nva_fpt_wat = function(selectedYear)
 
   # raw fpt ------------------------------------------ #
 
+  # add coef consumption /!\
+  # AGR -> 0.82
+  # IND & MIN -> 0.07
+  # ELC -> 0.10
+  # OTH -> 0.21
+
   raw_fpt = list()
   raw_fpt$AGR_FPT = wat_abs_data$ABS_AGR[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "AZ"]
   raw_fpt$MIN_FPT = wat_abs_data$ABS_MIN[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "BZ"]
@@ -77,8 +83,9 @@ build_branches_nva_fpt_wat = function(selectedYear)
     sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
 
     # build values
-    nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector] * branches_aggregates$NVA[i]
-    nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
+    nva_fpt_data$GROSS_IMPACT[i] = round(sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector] * branches_aggregates$NVA[i] *1000, digits = 0)
+    nva_fpt_data$UNIT_FOOTPRINT[i] = "M3"
+    nva_fpt_data$FOOTPRINT[i] = round(sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector], digits = 1)
     nva_fpt_data$UNIT_FOOTPRINT[i] = "L_CPEUR"
   }
 
