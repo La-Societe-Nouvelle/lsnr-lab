@@ -180,7 +180,7 @@ get_branches_imp_coef_haz = function(selectedYear)
     rbind(data_prodqnt_euu) %>%
     rbind(data_impqnt_euu) %>%
     rbind(data_expqnt_euu) %>%
-    filter(year == selectedYear) # control if empty
+    filter(year == selectedYear)  # control if empty
 
 
   haz_dmc_qnt_euu = data_prodqnt_euu$value + data_impqnt_euu$value - data_expqnt_euu$value
