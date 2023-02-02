@@ -15,7 +15,13 @@
 #' BuildWATData(max(FetchDataAvailability("WAT"))
 #' @noRd
 
-
+# List of sector
+#   AGR       Agriculture
+#   MIN       Industrie extractive
+#   IND       Industrie
+#   ELC       Production d'électricité
+#   CON       Construction
+#   SER       Services
 
 build_branches_nva_fpt_wat = function(selectedYear)
 {
@@ -40,19 +46,15 @@ build_branches_nva_fpt_wat = function(selectedYear)
 
   # raw fpt ------------------------------------------ #
 
-  # add coef consumption /!\
-  # AGR -> 0.82
-  # IND & MIN -> 0.07
-  # ELC -> 0.10
-  # OTH -> 0.21
+  # wat_cons_coef = lsnr:::WaterConsumptionCoefficients
 
   raw_fpt = list()
-  raw_fpt$AGR_FPT = wat_abs_data$ABS_AGR[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "AZ"]
-  raw_fpt$MIN_FPT = wat_abs_data$ABS_MIN[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "BZ"]
-  raw_fpt$IND_FPT = wat_abs_data$ABS_IND[1]*1000 / sum(branches_aggregates$NVA[branches_aggregates$BRANCH %in% c("CA","CB","CC","CD","CE","CF","CG","CH","CI","CJ","CK","CL","CM","DZ","EZ")])
-  raw_fpt$ELC_FPT = wat_abs_data$ABS_ELC_CL[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "DZ"]
-  raw_fpt$CON_FPT = wat_abs_data$ABS_CON[1]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH == "FZ"]
-  raw_fpt$SER_FPT = wat_abs_data$ABS_SER[1]*1000 / sum(branches_aggregates$NVA[branches_aggregates$BRANCH %in% c("GZ","HZ","IZ","JA","JB","JC","KZ","LZ","MA","MB","MC","NZ","OZ","PZ","QA","QB","RZ","SZ","TZ")])
+  raw_fpt$AGR_FPT = (wat_abs_data$ABS_AGR[1]*1000)*wat_cons_coef$AGR / branches_aggregates$NVA[branches_aggregates$BRANCH == "AZ"]
+  raw_fpt$MIN_FPT = (wat_abs_data$ABS_MIN[1]*1000)*wat_cons_coef$MIN / branches_aggregates$NVA[branches_aggregates$BRANCH == "BZ"]
+  raw_fpt$IND_FPT = (wat_abs_data$ABS_IND[1]*1000)*wat_cons_coef$IND / sum(branches_aggregates$NVA[branches_aggregates$BRANCH %in% c("CA","CB","CC","CD","CE","CF","CG","CH","CI","CJ","CK","CL","CM","DZ","EZ")])
+  raw_fpt$ELC_FPT = (wat_abs_data$ABS_ELC_CL[1]*1000)*wat_cons_coef$ELC / branches_aggregates$NVA[branches_aggregates$BRANCH == "DZ"]
+  raw_fpt$CON_FPT = (wat_abs_data$ABS_CON[1]*1000)*wat_cons_coef$CON / branches_aggregates$NVA[branches_aggregates$BRANCH == "FZ"]
+  raw_fpt$SER_FPT = (wat_abs_data$ABS_SER[1]*1000)*wat_cons_coef$SER / sum(branches_aggregates$NVA[branches_aggregates$BRANCH %in% c("GZ","HZ","IZ","JA","JB","JC","KZ","LZ","MA","MB","MC","NZ","OZ","PZ","QA","QB","RZ","SZ","TZ")])
 
   # sector fpt --------------------------------------- #
 
