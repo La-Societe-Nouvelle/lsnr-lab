@@ -13,6 +13,12 @@
 #' BuildARTData(max(FetchDataAvailability("ART"))
 #' @noRd
 
+# Données exploitées
+#   - Valeur ajoutée brute de l'Artisanat (données issues de la DGE - Chiffres clefs)
+#
+# /!\ l'empreinte est identique pour l'ensemble des branches
+#
+# Les immportations sont considérées comme nullement contributrices aux métiers d'art et aux savoir-faire (i.e. coef = 0)
 
 build_branches_nva_fpt_art = function(selectedYear)
 {
@@ -36,6 +42,7 @@ build_branches_nva_fpt_art = function(selectedYear)
   # sector fpt --------------------------------------- #
 
   all_sector_fpt = round((dge_data$value / sum(as.numeric(branches_aggregates$NVA + branches_aggregates$CFC))), digits = 3)
+  # NVA + CFC -> Valeur ajoutée brute disponible pour l'Artisanat
 
   # build nva fpt dataframe -------------------------- #
 
@@ -75,7 +82,7 @@ build_divisions_nva_fpt_art = function(selectedYear)
 
   # sector fpt --------------------------------------- #
 
-  all_sector_fpt = round((dge_data$value / sum(as.numeric(divisions_aggregates$NVA))), digits = 3)
+  all_sector_fpt = round((dge_data$value / sum(as.numeric(divisions_aggregates$NVA + divisions_aggregates$CFC))), digits = 3)
 
   # build nva fpt dataframe -------------------------- #
 

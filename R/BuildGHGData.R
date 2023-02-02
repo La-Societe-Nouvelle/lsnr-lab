@@ -28,16 +28,19 @@ build_branches_nva_fpt_ghg = function(selectedYear)
 
   # fetch data --------------------------------------- #
 
-
   set=c("A","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31_C32","C33",
         "D","E","F","G","H","I","J","J58","J59_J60","J61","J62_J63","K","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","O","P","Q","Q86","Q87_Q88",
         "R","S","T","TOTAL")
 
-  main = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_ac_ainah_r2"
-  filters = paste0("?geo=FR&unit=T&time=",selectedYear,"&airpol=GHG&")
-  nace = paste0("nace_r2=",set, collapse = "&")
+  endpoint = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_ac_ainah_r2?"
+  filters = paste0(
+    "geo=","FR","&",
+    "unit=","T","&",
+    "time=",selectedYear,"&",
+    "airpol=","GHG")
+  print(paste0(endpoint,filters))
 
-  ac_ainah_data = get_eurostat_data(paste0(main,filters,nace))
+  ac_ainah_data = get_eurostat_data(paste0(endpoint,filters))
 
 
   # sector fpt --------------------------------------- #

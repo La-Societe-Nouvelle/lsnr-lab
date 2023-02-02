@@ -51,45 +51,24 @@ build_branches_nva_fpt_haz = function(selectedYear)
     stop(paste0("Données indisponibles pour ",selectedYear))
   })
 
-  print(prodcom_data);
-  print(reversed_ic_matrix);
-
-  # sector fpt --------------------------------------- #
-
-  # sector_fpt_list = list()
-
-  # sector_fpt_list[["TOTAL"]] = env_chmhaz_data$values*1000000 / nama_data$values
-
-  # sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(sector_fpt_list))
-  # colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
-  # print(sector_fpt)
+  haz_dmc_qnt = prodcom_data$value[prodcom_data$aggregate=="PRODQNT"] + prodcom_data$value[prodcom_data$aggregate=="IMPQNT"] - prodcom_data$value[prodcom_data$aggregate=="EXPQNT"]
+  print(haz_dmc_qnt)
 
   # build nva fpt dataframe -------------------------- #
 
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
   colnames(nva_fpt_data) = c("BRANCH", "NVA")
 
-  branch_sector_fpt_matrix = lsnr:::MatrixHAZ
-
-  haz_dmc_qnt = prodcom_data$value[prodcom_data$aggregate=="PRODQNT"] + prodcom_data$value[prodcom_data$aggregate=="IMPQNT"] - prodcom_data$value[prodcom_data$aggregate=="EXPQNT"]
-  print(haz_dmc_qnt)
-
   for(i in 1:nrow(nva_fpt_data))
   {
     # get sector
     branch = nva_fpt_data$BRANCH[i]
-    # sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
 
     # build values
     nva_fpt_data$GROSS_IMPACT[i] = haz_dmc_qnt * reversed_ic_matrix$VALUE[reversed_ic_matrix$BRANCH==branch]
     nva_fpt_data$UNIT_IMPACT[i] = "T"
     nva_fpt_data$FOOTPRINT[i] = (haz_dmc_qnt * reversed_ic_matrix$VALUE[reversed_ic_matrix$BRANCH==branch]) / branches_aggregates$NVA[branches_aggregates$BRANCH==branch]
     nva_fpt_data$UNIT_FOOTPRINT[i] = "G_CPEUR"
-
-    # build values
-    # nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector] * branches_aggregates$NVA[i]
-    # nva_fpt_data$FOOTPRINT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]
-    # nva_fpt_data$UNIT_FOOTPRINT[i] = "G_CPEUR"
   }
 
   # temp correction
@@ -181,7 +160,6 @@ get_branches_imp_coef_haz = function(selectedYear)
     rbind(data_impqnt_euu) %>%
     rbind(data_expqnt_euu) %>%
     filter(year == selectedYear)  # control if empty
-
 
   haz_dmc_qnt_euu = data_prodqnt_euu$value + data_impqnt_euu$value - data_expqnt_euu$value
 

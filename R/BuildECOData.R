@@ -13,6 +13,10 @@
 #' BuildECOData(max(FetchDataAvailability("ECO"))
 #' @noRd
 
+# Données exploitées
+# -> Les données étant relatives à la valeur ajoutée nette des branches/divisions françaises, le taux de contribution est par définition de 100 %
+# -> De même, les immportations sont par définition nullement contributrices à l'économie francçaise (i.e. coef = 0)
+
 build_branches_nva_fpt_eco = function(selectedYear)
 {
   # get branches aggregates -------------------------- #
