@@ -25,25 +25,16 @@ build_branches_nva_fpt_nrg = function(selectedYear)
 
   # fetch data --------------------------------------- #
 
-  tryCatch({
-    set1=c("A","A01","A02","A03","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31_C32","C33","CH_INV_PA","D","E","E36","E37-E39","ENV","F","G","G45","G46","G47","H","H49","H50","H51","H52","H53","HH", "HH_HEAT","HH_OTH","HH_TRA","I","J","J58")
-    eurostat_data_1 = get_eurostat(
-      "env_ac_pefasu",
-      time_format = "num",
-      filters = list(geo="FR", unit="TJ", time=selectedYear, stk_flow="SUP", prod_nrg="R30", nace_r2=set1)
-    )
+  set=c("A","A01","A02","A03","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30",
+         "C31_C32","C33","CH_INV_PA","D","E","E36","E37-E39","ENV","F","G","G45","G46","G47","H","H49","H50","H51","H52","H53","HH", "HH_HEAT","HH_OTH",
+         "HH_TRA","I","J","J58","J59_J60","J61","J62_J63","K","K64","K65","K66","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","N77","N78","N79",
+         "N80-N82","NRG_FLOW","O","P","Q","Q86","Q87_Q88","R","R90-R92","R93","ROW_ACT","S","S94","S95","S96","SD_SU","T","TOTAL","U")
 
-    set2=c("J59_J60","J61","J62_J63","K","K64","K65","K66","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","N77","N78","N79","N80-N82","NRG_FLOW","O","P","Q","Q86","Q87_Q88","R","R90-R92","R93","ROW_ACT","S","S94","S95","S96","SD_SU","T","TOTAL","U")
-    eurostat_data_2 = get_eurostat(
-      "env_ac_pefasu",
-      time_format = "num",
-      filters = list(geo="FR", unit="TJ", time=selectedYear, stk_flow="SUP", prod_nrg="R30", nace_r2=set2)
-    )
-  }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table env_ac_pefasu)"))
-  })
+  main = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_ac_pefasu"
+  filters = paste0("?geo=FR&unit=TJ&time=",selectedYear,"&stk_flow=SUP&prod_nrg=R30&")
+  nace = paste0("nace_r2=",set, collapse = "&")
 
-  ac_pefasu_data = rbind(eurostat_data_1,eurostat_data_2)
+  ac_pefasu_data = get_eurostat_data(paste0(main,filters,nace))
 
   # sector fpt --------------------------------------- #
 
@@ -115,25 +106,16 @@ build_divisions_nva_fpt_nrg = function(selectedYear)
 
   # fetch data --------------------------------------- #
 
-  tryCatch({
-    set1=c("A","A01","A02","A03","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31_C32","C33","CH_INV_PA","D","E","E36","E37-E39","ENV","F","G","G45","G46","G47","H","H49","H50","H51","H52","H53","HH", "HH_HEAT","HH_OTH","HH_TRA","I","J","J58")
-    eurostat_data_1 = get_eurostat(
-      "env_ac_pefasu",
-      time_format = "num",
-      filters = list(geo="FR", unit="TJ", time=selectedYear, stk_flow="SUP", prod_nrg="R30", nace_r2=set1)
-    )
+  set=c("A","A01","A02","A03","B","C","C10-C12","C13-C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30",
+        "C31_C32","C33","CH_INV_PA","D","E","E36","E37-E39","ENV","F","G","G45","G46","G47","H","H49","H50","H51","H52","H53","HH", "HH_HEAT","HH_OTH",
+        "HH_TRA","I","J","J58","J59_J60","J61","J62_J63","K","K64","K65","K66","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","N77","N78","N79",
+        "N80-N82","NRG_FLOW","O","P","Q","Q86","Q87_Q88","R","R90-R92","R93","ROW_ACT","S","S94","S95","S96","SD_SU","T","TOTAL","U")
 
-    set2=c("J59_J60","J61","J62_J63","K","K64","K65","K66","L","L68A","M","M69_M70","M71","M72","M73","M74_M75","N","N77","N78","N79","N80-N82","NRG_FLOW","O","P","Q","Q86","Q87_Q88","R","R90-R92","R93","ROW_ACT","S","S94","S95","S96","SD_SU","T","TOTAL","U")
-    eurostat_data_2 = get_eurostat(
-      "env_ac_pefasu",
-      time_format = "num",
-      filters = list(geo="FR", unit="TJ", time=selectedYear, stk_flow="SUP", prod_nrg="R30", nace_r2=set2)
-    )
-  }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table env_ac_pefasu)"))
-  })
+  main = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_ac_pefasu"
+  filters = paste0("?geo=FR&unit=TJ&time=",selectedYear,"&stk_flow=SUP&prod_nrg=R30&")
+  nace = paste0("nace_r2=",set, collapse = "&")
 
-  ac_pefasu_data = rbind(eurostat_data_1,eurostat_data_2)
+  ac_pefasu_data = get_eurostat_data(paste0(main,filters,nace))
 
   # sector fpt --------------------------------------- #
 
@@ -205,17 +187,13 @@ build_divisions_nva_fpt_nrg = function(selectedYear)
 get_branches_imp_coef_nrg = function(selectedYear)
 {
   # fetch data
-  eurostat_pefasu_data = get_eurostat(
-    "env_ac_pefasu",
-    time_format = "num",
-    filters = list(geo=c("FR","EU27_2020"), unit="TJ", time=selectedYear, stk_flow="SUP", prod_nrg="R30", nace_r2="TOTAL")
-  )
+
+  eurostat_pefasu_data = get_eurostat_data(paste0("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_ac_pefasu?geo=FR&geo=EU27_2020&unit=TJ&time=",selectedYear,"&stk_flow=SUP&prod_nrg=R30&nace_r2=TOTAL"))
 
   # domestic production
-  eurostat_nama_data = get_eurostat(
-    "nama_10_a64",
-    filters = list(geo=c("FR","EU27_2020"), na_item="B1G", time=selectedYear, unit="CP_MEUR", nace_r2="TOTAL")
-  )
+
+  eurostat_nama_data = get_eurostat_data(paste0("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nama_10_a64?geo=FR&geo=EU27_2020&unit=CP_MEUR&time=",selectedYear,"&nace_r2=TOTAL&na_item=B1G"))
+
 
   fpt_fra =  eurostat_pefasu_data$values[eurostat_pefasu_data$geo=="FR"] / eurostat_nama_data$values[eurostat_nama_data$geo=="FR"]
   fpt_euu =  eurostat_pefasu_data$values[eurostat_pefasu_data$geo=="EU27_2020"] / eurostat_nama_data$values[eurostat_nama_data$geo=="EU27_2020"]

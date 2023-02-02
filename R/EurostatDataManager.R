@@ -5,6 +5,14 @@ get_eurostat_data = function(endpoint)
 
   content = fromJSON(rawToChar(res$content))
 
+  if(length(content$value)==0){
+
+    selectedYear = substr(endpoint,str_locate(endpoint,"&time=")[1,2]+1,str_locate(endpoint,"&time=")[1,2]+4)
+    requestedTable = substr(endpoint,str_locate(endpoint,"1.0/data/")[1,2]+1,str_locate(endpoint,"\\?")[1,1]-1)
+
+    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table ", requestedTable, ")"))
+  }
+
   data = data.frame(matrix(nrow = length(content$value), ncol = (length(content$id))))
   colnames(data) = content$id
 
@@ -12,7 +20,7 @@ get_eurostat_data = function(endpoint)
   {
     id_value = strtoi(names(content$value)[i])
 
-    for (j in length(content$id):1) 
+    for (j in length(content$id):1)
     {
       param = content$id[j]
       x_param = id_value %% content$size[j]
@@ -23,6 +31,5 @@ get_eurostat_data = function(endpoint)
 
     data$value[i] = content$value[i]
   }
-
   return(data)
 }

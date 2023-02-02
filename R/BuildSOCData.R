@@ -27,7 +27,7 @@ build_branches_nva_fpt_soc = function(selectedYear)
     ess_data = as.data.frame(cbind(branches_aggregates$BRANCH))
     colnames(ess_data) = c("BRANCH")
     # loop to fetch data for each branch
-    for(i in 1:nrow(branches_aggregates)) 
+    for(i in 1:nrow(branches_aggregates))
     {
       res = GET(paste0("https://api.lasocietenouvelle.org/serie/SIRENE_ESS_LEGALUNITS_P100_FRA_BRANCH?area=FRA&code=",ess_data$BRANCH[i]))
       ess_branch_data = fromJSON(rawToChar(res$content))$data %>% filter(year == selectedYear)
@@ -59,7 +59,7 @@ build_divisions_nva_fpt_soc = function(selectedYear)
 {
   # get branches aggregates -------------------------- #
 
-  divisions_aggregates() = get_divisions_aggregates(selectedYear)
+  divisions_aggregates = get_divisions_aggregates(selectedYear)
 
   # fetch data --------------------------------------- #
 

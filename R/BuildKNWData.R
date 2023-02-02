@@ -24,17 +24,11 @@ build_branches_nva_fpt_knw = function(selectedYear)
 
   # fetch data --------------------------------------- #
 
-  tryCatch({
-    eurostat_data = get_eurostat(
-      "trng_cvt_16n2",
-      time_format = "num",
-      filters = list(geo="FR", cost="TOTAL", time=selectedYear, unit="PC")
-    )
-  }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table trng_cvt_16n2)"))
-  })
-
-  trng_cvt_data = eurostat_data
+  trng_cvt_data = get_eurostat("trng_cvt_16n2") %>%
+    filter(geo == "FR",
+           cost =="TOTAL",
+           time == paste0(selectedYear,"-01-01"),
+           unit =="PC")
 
   # sector fpt --------------------------------------- #
 
@@ -82,17 +76,11 @@ build_divisions_nva_fpt_knw = function(selectedYear)
 
   # fetch data --------------------------------------- #
 
-  tryCatch({
-    eurostat_data = get_eurostat(
-      "trng_cvt_16n2",
-      time_format = "num",
-      filters = list(geo="FR", cost="TOTAL", time=selectedYear, unit="PC")
-    )
-  }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table trng_cvt_16n2)"))
-  })
-
-  trng_cvt_data = eurostat_data
+  trng_cvt_data = get_eurostat("trng_cvt_16n2") %>%
+    filter(geo == "FR",
+           cost =="TOTAL",
+           time == paste0(selectedYear,"-01-01"),
+           unit =="PC")
 
   # sector fpt --------------------------------------- #
 
@@ -135,11 +123,12 @@ build_divisions_nva_fpt_knw = function(selectedYear)
 get_branches_imp_coef_knw = function(selectedYear)
 {
   # fetch data
-  eurostat_data = get_eurostat(
-    "trng_cvt_16n2",
-    time_format = "num",
-    filters = list(geo=c("FR","EU28"), cost="TOTAL", unit="PC", time=selectedYear, nace_r2="TOTAL")
-  )
+
+  trng_cvt_data = get_eurostat("trng_cvt_16n2") %>%
+    filter(geo == "FR",
+           cost =="TOTAL",
+           time == paste0(selectedYear,"-01-01"),
+           unit =="PC")
 
   fpt_fra =  eurostat_data$values[eurostat_data$geo=="FR"]
   fpt_euu =  eurostat_data$values[eurostat_data$geo=="EU28"]
