@@ -25,18 +25,11 @@ build_branches_nva_fpt_wat = function(selectedYear)
 
   # fetch data --------------------------------------- #
 
-  tryCatch({
-    eurostat_data = get_eurostat(
-      "env_wat_abs",
-      time_format = "num",
-      filters = list(geo = c("FR"), unit = "MIO_M3", time = selectedYear, wat_src = "FRW")
-    )
-  }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table env_wat_abs)"))
-  })
+  main = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_wat_abs"
+  filters = paste0("?geo=FR&unit=MIO_M3&time=",selectedYear,"&wat_src=FRW")
 
-  wat_abs_data = eurostat_data %>%
-      pivot_wider(names_from = wat_proc, values_from = values)
+  wat_abs_data = get_eurostat_data(paste0(main,filters)) %>%
+    pivot_wider(names_from = wat_proc, values_from = value)
 
   # raw fpt ------------------------------------------ #
 
@@ -101,20 +94,11 @@ build_divisions_nva_fpt_wat = function(selectedYear)
 
   # fetch data --------------------------------------- #
 
-  tryCatch({
+  main = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_wat_abs"
+  filters = paste0("?geo=FR&unit=MIO_M3&time=",selectedYear,"&wat_src=FRW")
 
-    eurostat_data = get_eurostat(
-      "env_wat_abs",
-      time_format = "num",
-      filters = list(geo = c("FR"), unit = "MIO_M3", time = selectedYear, wat_src = "FRW")
-    )
-
-  }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table env_wat_abs)"))
-  })
-
-  wat_abs_data = eurostat_data %>%
-      pivot_wider(names_from = wat_proc, values_from = values)
+  wat_abs_data = get_eurostat_data(paste0(main,filters)) %>%
+    pivot_wider(names_from = wat_proc, values_from = value)
 
   # raw fpt ------------------------------------------ #
 
@@ -167,17 +151,16 @@ build_divisions_nva_fpt_wat = function(selectedYear)
 get_branches_imp_coef_wat = function(selectedYear)
 {
   # fetch data
-  eurostat_wat_abs_data = get_eurostat(
-    "env_wat_abs",
-    time_format = "num",
-    filters = list(geo=c("FR","EU27_2020"), unit = "MIO_M3", time = selectedYear, wat_src = "FRW")
-  )
+
+  main = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_wat_abs"
+  filters = paste0("?geo=FR&unit=MIO_M3&time=",selectedYear,"&wat_src=FRW")
+
+  eurostat_wat_abs_data = get_eurostat_data(paste0(main,filters)) %>%
+    pivot_wider(names_from = wat_proc, values_from = value)
 
   # domestic production
-  eurostat_nama_data = get_eurostat(
-    "nama_10_a64",
-    filters = list(geo=c("FR","EU27_2020"), na_item="B1G", time=selectedYear, unit="CP_MEUR", nace_r2="TOTAL")
-  )
+
+  eurostat_nama_data = get_eurostat_data(paste0("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nama_10_a64?geo=FR&geo=EU27_2020&unit=CP_MEUR&time=",selectedYear,"&nace_r2=TOTAL&na_item=B1G"))
 
   fpt_fra =  eurostat_wat_abs_data$values[eurostat_wat_abs_data$geo=="FR"] / eurostat_nama_data$values[eurostat_nama_data$geo=="FR"]
   fpt_euu =  eurostat_wat_abs_data$values[eurostat_wat_abs_data$geo=="EU27_2020"] / eurostat_nama_data$values[eurostat_nama_data$geo=="EU27_2020"]

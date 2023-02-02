@@ -168,17 +168,17 @@ build_divisions_nva_fpt_was = function(selectedYear)
 get_branches_imp_coef_was = function(selectedYear)
 {
   # fetch data
-  eurostat_was_gen_data = get_eurostat(
-    "env_wasgen",
-    time_format = "num",
-    filters = list(geo=c("FR","EU27_2020"), unit = "T", time = selectedYear, waste = "TOTAL", hazard="HAZ_NHAZ")
-  )
+
+  eurostat_was_gen_data = get_eurostat("env_wasgen") %>%
+    filter(geo %in% c("FR","EU27_2020")) %>%
+    filter(waste=="TOTAL") %>%
+    filter(hazard=="HAZ_NHAZ") %>%
+    filter(unit=="T") %>%
+    filter(time == paste0(selectedYear,"-01-01"))
 
   # domestic production
-  eurostat_nama_data = get_eurostat(
-    "nama_10_a64",
-    filters = list(geo=c("FR","EU27_2020"), na_item="B1G", time=selectedYear, unit="CP_MEUR", nace_r2="TOTAL")
-  )
+
+  eurostat_nama_data = get_eurostat_data(paste0("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nama_10_a64?geo=FR&geo=EU27_2020&unit=CP_MEUR&time=",selectedYear,"&nace_r2=TOTAL&na_item=B1G"))
 
   fpt_fra =  eurostat_was_gen_data$values[eurostat_was_gen_data$geo=="FR"] / eurostat_nama_data$values[eurostat_nama_data$geo=="FR"]
   fpt_euu =  eurostat_was_gen_data$values[eurostat_was_gen_data$geo=="EU27_2020"] / eurostat_nama_data$values[eurostat_nama_data$geo=="EU27_2020"]

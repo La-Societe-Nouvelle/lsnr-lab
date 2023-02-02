@@ -24,25 +24,20 @@ build_branches_nva_fpt_mat = function(selectedYear)
 
   # fetch data --------------------------------------- #
 
-  tryCatch({
-    eurostat_data = get_eurostat("env_ac_mfa")
-  }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table env_ac_mfa)"))
-  })
+  set=c("MF1","MF2","MF3","MF4")
 
-  ac_mfa_data = eurostat_data %>%
-    filter(geo == "FR") %>%
-    filter(indic_env == "DE") %>%
-    filter(unit == "THS_T") %>%
-    filter(time == paste0(selectedYear,"-01-01")) %>%
-    filter(material %in% c("MF1","MF2","MF3","MF4"))
+  main = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_ac_mfa"
+  filters = paste0("?geo=FR&unit=THS_T&time=",selectedYear,"&indic_env=DE&")
+  mf = paste0("material=",set, collapse = "&")
+
+  ac_mfa_data = get_eurostat_data(paste0(main,filters,mf))
 
   # sector fpt --------------------------------------- #
 
   sector_fpt_list = list()
 
-  sector_fpt_list[["A"]]    = ac_mfa_data$values[ac_mfa_data$material=="MF1"]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH=="AZ"]
-  sector_fpt_list[["B"]]    = sum(ac_mfa_data$values[ac_mfa_data$material %in% c("MF2","MF3","MF4")])*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH=="BZ"]
+  sector_fpt_list[["A"]]    = ac_mfa_data$value[ac_mfa_data$material=="MF1"]*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH=="AZ"]
+  sector_fpt_list[["B"]]    = sum(ac_mfa_data$value[ac_mfa_data$material %in% c("MF2","MF3","MF4")])*1000 / branches_aggregates$NVA[branches_aggregates$BRANCH=="BZ"]
   sector_fpt_list[["C-T"]]  = 0
 
   sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(sector_fpt_list))
@@ -80,27 +75,22 @@ build_divisions_nva_fpt_mat = function(selectedYear)
 
   # fetch data --------------------------------------- #
 
-  tryCatch({
-    eurostat_data = get_eurostat("env_ac_mfa")
-  }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table env_ac_mfa)"))
-  })
+  set=c("MF1","MF2","MF3","MF4")
 
-  ac_mfa_data = eurostat_data %>%
-    filter(geo == "FR") %>%
-    filter(indic_env == "DE") %>%
-    filter(unit == "THS_T") %>%
-    filter(time == paste0(selectedYear,"-01-01")) %>%
-    filter(material %in% c("MF1","MF2","MF3","MF4"))
+  main = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_ac_mfa"
+  filters = paste0("?geo=FR&unit=THS_T&time=",selectedYear,"&indic_env=DE&")
+  mf = paste0("material=",set, collapse = "&")
+
+  ac_mfa_data = get_eurostat_data(paste0(main,filters,mf))
 
   # sector fpt --------------------------------------- #
 
   sector_fpt_list = list()
 
   # 01 -> 03 / A
-  sector_fpt_list[["A"]] = sum(ac_mfa_data$values[ac_mfa_data$material %in% c("MF1")])*1000 / divisions_aggregates$NVA[divisions_aggregates$DIVISION %in% c("01","02","03")]
+  sector_fpt_list[["A"]] = sum(ac_mfa_data$value[ac_mfa_data$material %in% c("MF1")])*1000 / divisions_aggregates$NVA[divisions_aggregates$DIVISION %in% c("01","02","03")]
   # 05 -> 08 / B
-  sector_fpt_list[["B"]] = sum(ac_mfa_data$values[ac_mfa_data$material %in% c("MF2","MF3","MF4")])*1000 / divisions_aggregates$NVA[divisions_aggregates$DIVISION %in% c("05","06","07","08")]
+  sector_fpt_list[["B"]] = sum(ac_mfa_data$value[ac_mfa_data$material %in% c("MF2","MF3","MF4")])*1000 / divisions_aggregates$NVA[divisions_aggregates$DIVISION %in% c("05","06","07","08")]
   # 09 -> 98 / C-T
   sector_fpt_list[["C-T"]] = 0
 
@@ -134,17 +124,13 @@ build_divisions_nva_fpt_mat = function(selectedYear)
 get_branches_imp_coef_mat = function(selectedYear)
 {
   # fetch data
-  eurostat_mfa_data = get_eurostat(
-    "env_ac_mfa",
-    time_format = "num",
-    filters = list(geo=c("FR","EU27_2020"), indic_env="DE", unit="THS_T", time=selectedYear, material="TOTAL", nace_r2="TOTAL")
-  )
+
+  eurostat_mfa_data = get_eurostat_data(paste0("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_ac_mfa?geo=FR&unit=THS_T&time=",selectedYear,"&indic_env=DE&material=TOTAL"))
 
    # domestic production
-  eurostat_nama_data = get_eurostat(
-    "nama_10_a64",
-    filters = list(geo=c("FR","EU27_2020"), na_item="B1G", time=selectedYear, unit="CP_MEUR", nace_r2="TOTAL")
-  )
+
+  eurostat_nama_data = get_eurostat_data(paste0("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nama_10_a64?geo=FR&geo=EU27_2020&unit=CP_MEUR&time=",selectedYear,"&nace_r2=TOTAL&na_item=B1G"))
+
 
   fpt_fra =  eurostat_mfa_data$values[eurostat_mfa_data$geo=="FR"] / eurostat_nama_data$values[eurostat_nama_data$geo=="FR"]
   fpt_euu =  eurostat_mfa_data$values[eurostat_mfa_data$geo=="EU27_2020"] / eurostat_nama_data$values[eurostat_nama_data$geo=="EU27_2020"]
