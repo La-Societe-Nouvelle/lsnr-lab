@@ -90,8 +90,7 @@ build_divisions_nva_fpt_haz = function(selectedYear)
 
   # build nva fpt dataframe -------------------------- #
 
-  nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
-  colnames(nva_fpt_data) = c("DIVISION", "NVA")
+  nva_fpt_data = data.frame(DIVISION = as.character(divisions_aggregates$CNA_ACTIVITE), NVA = as.numeric(divisions_aggregates$NVA))
 
   divisions = lsnr:::Divisions
 
@@ -164,10 +163,7 @@ get_branches_imp_coef_haz = function(selectedYear)
   haz_dmc_qnt_euu = data_prodqnt_euu$value + data_impqnt_euu$value - data_expqnt_euu$value
 
   # domestic production
-  eurostat_nama_data = get_eurostat(
-    "nama_10_a64",
-    filters = list(geo=c("FR","EU27_2020"), na_item="B1G", time=selectedYear, unit="CP_MEUR", nace_r2="TOTAL")
-  )
+  eurostat_nama_data = get_eurostat_data(paste0("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nama_10_a64?geo=FR&geo=EU27_2020&unit=CP_MEUR&time=",selectedYear,"&nace_r2=TOTAL&na_item=B1G"))
 
   fpt_fra =  haz_dmc_qnt_fra / eurostat_nama_data$values[eurostat_nama_data$geo=="FR"]
   fpt_wld =  haz_dmc_qnt_euu / eurostat_nama_data$values[eurostat_nama_data$geo=="EU27_2020"]

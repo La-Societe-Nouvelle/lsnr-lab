@@ -5,6 +5,11 @@
 #'
 #' @param Year Considered Year.
 #'
+#' @importFrom httr GET
+#' @importFrom dplyr %>%
+#' @importFrom dplyr filter
+#' @importFrom jsonlite fromJSON
+#'
 #' @return An object `list` made up of 4 elements : value added impacts by French branches,
 #' imported products associated coefficient, data sources and values unit.
 #' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}}, \code{\link{BuildNRGData}},
@@ -34,7 +39,7 @@ build_branches_nva_fpt_art = function(selectedYear)
 
     dge_data = fromJSON(rawToChar(res$content))$data %>%
       filter(year == selectedYear)
-    
+
   }, error = function(e) {
     stop(paste0("Données indisponibles pour ",selectedYear))
   })
@@ -74,8 +79,8 @@ build_divisions_nva_fpt_art = function(selectedYear)
     res = GET("https://api.lasocietenouvelle.org/serie/MACRO_CRAFTEDNVA_DGE__FRA_CPMEUR")
 
     dge_data = fromJSON(rawToChar(res$content))$data %>%
-      filter(dge_data$year == selectedYear)
-    
+      filter(year == selectedYear)
+
   }, error = function(e) {
     stop(paste0("Données indisponibles pour ",selectedYear))
   })
@@ -86,8 +91,7 @@ build_divisions_nva_fpt_art = function(selectedYear)
 
   # build nva fpt dataframe -------------------------- #
 
-  nva_fpt_data = as.data.frame(cbind(divisions_aggregates$DIVISION, divisions_aggregates$NVA))
-  colnames(nva_fpt_data) = c("DIVISION", "NVA")
+  nva_fpt_data = data.frame(DIVISION = as.character(divisions_aggregates$CNA_ACTIVITE), NVA = as.numeric(divisions_aggregates$NVA))
 
   for(i in 1:nrow(nva_fpt_data))
   {

@@ -4,7 +4,7 @@
 \alias{build_divisions_fpt}
 \title{Compute macroeconomic values of societal footprints by NACE divisions (88)}
 \usage{
-build_divisions_fpt(indicator, year)
+build_divisions_fpt(indicator, year, verbose = T)
 }
 \arguments{
 \item{indicator}{requested non-financial dimension.}

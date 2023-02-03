@@ -8,6 +8,8 @@
 #' @importFrom WDI WDI
 #' @importFrom jsonlite fromJSON
 #' @importFrom httr GET
+#' @importFrom tidyr pivot_longer
+#'
 #' @return An object `list` made up of 5 elements : value added impacts by French branches,
 #' imported products associated coefficient, data sources, values unit and value added impacts by French divisions.
 #' @seealso \code{\link{BuildECOData}}, \code{\link{BuildNRGData}},
@@ -38,10 +40,9 @@ build_branches_nva_fpt_ghg = function(selectedYear)
     "unit=","T","&",
     "time=",selectedYear,"&",
     "airpol=","GHG")
-  print(paste0(endpoint,filters))
 
   ac_ainah_data = get_eurostat_data(paste0(endpoint,filters))
-
+  ac_ainah_data$value = unlist(ac_ainah_data$value)
 
   # sector fpt --------------------------------------- #
 
@@ -108,7 +109,8 @@ build_divisions_nva_fpt_ghg = function(selectedYear)
 {
   # -------------------------------------------------- #
 
-  divisions = lsnr:::Divisions
+  divisions = lsnr:::DivisionMappingGHG[lsnr:::DivisionMappingGHG$DIVISION!="98",]
+  divisions$DIVISION[nchar(divisions$DIVISION)==1] = paste0("0",divisions$DIVISION[nchar(divisions$DIVISION)==1])
 
   # get divisions aggregates ------------------------- #
 
@@ -125,6 +127,7 @@ build_divisions_nva_fpt_ghg = function(selectedYear)
   nace = paste0("nace_r2=",set, collapse = "&")
 
   ac_ainah_data = get_eurostat_data(paste0(main,filters,nace))
+  ac_ainah_data$value = unlist(ac_ainah_data$value)
 
   # sector fpt --------------------------------------- #
 
@@ -132,7 +135,7 @@ build_divisions_nva_fpt_ghg = function(selectedYear)
 
   for (i in 1:nrow(divisions))
   {
-    code_nace = divisions$DIVISION[i]
+    code_nace = divisions$SECTOR[i]
     if (code_nace %in% ac_ainah_data$nace_r2) {
       if (divisions_aggregates$NVA[i]>0) {
         sector_fpt_list[[code_nace]] = ac_ainah_data$value[ac_ainah_data$nace_r2==code_nace] / divisions_aggregates$NVA[i]
@@ -151,7 +154,7 @@ build_divisions_nva_fpt_ghg = function(selectedYear)
 
   nva_fpt_data = data.frame(DIVISION = divisions_aggregates$CNA_ACTIVITE, NVA = divisions_aggregates$NVA)
 
-  division_sector_fpt_matrix = lsnr:::MatrixGHG
+  division_sector_fpt_matrix = divisions
 
   for(i in 1:nrow(nva_fpt_data))
   {

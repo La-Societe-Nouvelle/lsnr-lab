@@ -4,10 +4,12 @@
 #' @param Year Considered year.
 #'
 #' @return A `data.frame` object containing annual Insee supply-use equilibrium data.
+#' @importFrom insee get_insee_dataset
 #' @importFrom dplyr %>%
 #' @importFrom dplyr select
 #' @importFrom dplyr mutate
 #' @importFrom dplyr arrange
+#' @importFrom dplyr filter
 #' @importFrom insee get_insee_dataset
 #' @importFrom tidyr pivot_wider
 #' @importFrom stringr str_remove
@@ -25,7 +27,7 @@
 #   D21       Impôts sur les produits
 #   P91       Marge de transport
 #   P92       Marges commerciales totales
-#   P8        Correction CAF/CAB
+#   P8        Correction CAF/FAB
 #   P5        Formation brute de capital
 
 # List of assets

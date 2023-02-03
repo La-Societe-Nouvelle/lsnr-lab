@@ -22,25 +22,31 @@
 #' buildDivisions("ECO",2019)
 #' @export
 
-build_divisions_fpt = function(indicator,year)
+build_divisions_fpt = function(indicator,year,verbose=T)
 {
 
   indicator = tolower(as.character(indicator))
 
   divisions = lsnr:::Divisions
 
+  if(verbose == F)
+  {
+    rec_fl = tempfile(fileext = ".txt")
+    sink(rec_fl,type = c("output", "message")) #Record console output in a temp file
+  }
+
   # divisions_aggregates = get_divisions_aggregates(year)
 
   # build branches data
-  fpt_branches = build_branches_fpt(indicator, year)
+  fpt_branches = build_branches_fpt(indicator, year,verbose)
 
   # get nva data
-  nva_fpt = get_divisions_nva_fpt(indicator,year)
+  nva_fpt = suppressMessages(get_divisions_nva_fpt(indicator,year))
 
   # divisions fpt
   fpt_divisions = get_empty_divisions_fpt(divisions)
 
-  divisions_aggregates = get_divisions_aggregates(year)
+  divisions_aggregates = suppressMessages(get_divisions_aggregates(year))
 
   for(i in 1:nrow(fpt_divisions))
   {
@@ -60,6 +66,12 @@ build_divisions_fpt = function(indicator,year)
   output_2$YEAR = year
   output_2$UNIT = indic_metadata$UNIT[indic_metadata$CODE==toupper(indicator)]
   output_2$INDIC = toupper(indicator)
+
+  if(verbose == F)
+  {
+    sink() ; closeAllConnections() #Stop recording
+    unlink(rec_fl) #Delete console ouput
+  }
 
   return(output_2)
 }

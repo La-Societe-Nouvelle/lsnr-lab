@@ -8,6 +8,7 @@
 #' @importFrom eurostat get_eurostat
 #' @importFrom curl curl_download
 #' @importFrom data.table fread
+#' @importFrom stringr str_locate_all
 #'
 #' @return An object `list` made up of 4 elements : value added impacts by French branches,
 #' imported products associated coefficient, data sources and values unit.

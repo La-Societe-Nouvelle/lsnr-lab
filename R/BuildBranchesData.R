@@ -4,6 +4,10 @@
 #' It involves, on one hand, a macroeconomic input-output modelization of the French economy and its interactions with
 #' the rest of the world, based on INSEE IOTs, and requires, on the other hand, direct impact data from institutional sources.
 #'
+#' @importFrom tidyr pivot_longer
+#' @importFrom stringr str_remove
+#' @importFrom dplyr %>%
+#' @importFrom dplyr mutate
 #'
 #' @param year year of requested data.
 #' @param indicator requested non-financial dimension.
@@ -16,8 +20,13 @@
 #' buildBranchesData("ECO",2019)
 #' @export
 
-build_branches_fpt = function(indicator, year)
+build_branches_fpt = function(indicator, year, verbose = T)
 {
+  if(verbose == F)
+  {
+    rec_fl = tempfile(fileext = ".txt")
+    sink(rec_fl,type = c("output", "message")) #Record console output in a temp file
+  }
   indicator = tolower(as.character(indicator))
 
   print(paste0("Start building data for indicator ",indicator," for year ",year))
@@ -25,6 +34,21 @@ build_branches_fpt = function(indicator, year)
   options(warn = -1)
 
   branches = lsnr:::Branches
+
+  print("---------- Impacts data loading ----------")
+
+  # Call indicator-specific data
+  # Columns :
+  #   - BRANCH
+  #   - FOOTPRINT
+  #   - GROSS_IMPACT
+
+  nva_fpt = suppressMessages(get_branches_nva_fpt(indicator,year))
+  print(nva_fpt)
+
+  fpt_branches = get_empty_branches_fpt(branches)
+  fpt_products = get_empty_products_fpt(branches)
+
 
   #Fetch all economic and financial raw data needed in order to complete computations process
 
@@ -44,20 +68,6 @@ build_branches_fpt = function(indicator, year)
 
   print("Transfers matrix...")
   tr_matrix = suppressMessages(get_transfers_matrix(year))
-
-  print("---------- Impacts data loading ----------")
-
-  # Call indicator-specific data
-  # Columns :
-  #   - BRANCH
-  #   - FOOTPRINT
-  #   - GROSS_IMPACT
-
-  nva_fpt = get_branches_nva_fpt(indicator,year)
-  print(nva_fpt)
-
-  fpt_branches = get_empty_branches_fpt(branches)
-  fpt_products = get_empty_products_fpt(branches)
 
   #
   print("---------- Initiatilisations ----------")
@@ -206,6 +216,12 @@ build_branches_fpt = function(indicator, year)
   output_2$YEAR = year
   output_2$UNIT = indic_metadata$UNIT[indic_metadata$CODE==toupper(indicator)]
   output_2$INDIC = toupper(indicator)
+
+  if(verbose == F)
+  {
+    sink() ; closeAllConnections() #Stop recording
+    unlink(rec_fl) #Delete console ouput
+  }
 
   return(output_2)
 }
