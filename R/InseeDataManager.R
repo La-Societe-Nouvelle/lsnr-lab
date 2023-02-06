@@ -1,9 +1,3 @@
-#'Fetch data frame associated to supply-use equilibrium
-#'of annual national accounts from Insee's API.
-#'
-#' @param Year Considered year.
-#'
-#' @return A `data.frame` object containing annual Insee supply-use equilibrium data.
 #' @importFrom insee get_insee_dataset
 #' @importFrom dplyr %>%
 #' @importFrom dplyr select
@@ -13,9 +7,7 @@
 #' @importFrom insee get_insee_dataset
 #' @importFrom tidyr pivot_wider
 #' @importFrom stringr str_remove
-#' @seealso \code{\link{BuildDivisionsData}}, \code{\link{BuildBranchesData}}.
-#' @examples
-#' FetchDataERE(2018)
+#'
 #' @noRd
 
 # List of aggregates

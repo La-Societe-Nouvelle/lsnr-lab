@@ -1,21 +1,10 @@
-#'Build and returns all data required to the GEQ indicator computations.
-#'
-#'Returns a `list` made up of value added impacts by French branches, imported products associated coefficient,
-#'Data sources and values unit. This data will be used in both BuildBranchesData and BuildDivisionsData functions.
-#'
-#' @param Year Considered year.
-#'
 #' @importFrom eurostat get_eurostat
 #' @importFrom curl curl_download
 #' @importFrom data.table fread
 #' @importFrom stringr str_locate_all
+#' @importFrom stringr str_detect
+#' @importFrom stringr str_remove
 #'
-#' @return An object `list` made up of 4 elements : value added impacts by French branches,
-#' imported products associated coefficient, data sources and values unit.
-#' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}}, \code{\link{BuildNRGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
-#' @examples
-#' BuildGEQData(max(FetchDataAvailability("GEQ"))
 #' @noRd
 
 build_branches_nva_fpt_geq = function(selectedYear)

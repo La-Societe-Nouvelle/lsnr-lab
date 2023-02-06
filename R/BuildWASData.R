@@ -5,12 +5,15 @@
 #'
 #' @param Year Considered year.
 #'
-#' @return An object `list` made up of 4 elements : value added impacts by French branches,
-#' imported products associated coefficient, data sources and values unit.
-#' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
+#' @importFrom dplyr %>%
+#' @importFrom dplyr filter
+#' @importFrom tidyr pivot_longer
+#' @importFrom eurostat get_eurostat
+
+#' @seealso \code{\link{build_branches_nva_fpt_ghg}}, \code{\link{build_branches_nva_fpt_nrg}},
+#'  \code{\link{build_branches_fpt}}, \code{\link{build_divisions_fpt}}, \code{\link{get_indicator_list}}.
 #' @examples
-#' BuildWASData(max(FetchDataAvailability("WAS"))
+#' build_branches_nva_fpt_was(2018)
 #' @noRd
 
 
@@ -62,14 +65,13 @@ build_branches_nva_fpt_was = function(selectedYear)
   sector_fpt_list[["G"]] = fpt_g_u_x_g4677 + wasgen_data$values[wasgen_data$nace_r2=="G4677"] / branches_aggregates$NVA[branches_aggregates$BRANCH=="GZ"]
   sector_fpt_list[["H-T"]] = fpt_g_u_x_g4677
 
-  sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(sector_fpt_list))
+  sector_fpt = cbind.data.frame(sector_fpt_list) %>% pivot_longer(cols = names(cbind.data.frame(sector_fpt_list)))
   colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
   print(sector_fpt)
 
   # build nva fpt dataframe -------------------------- #
 
-  nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
-  colnames(nva_fpt_data) = c("BRANCH", "NVA")
+  nva_fpt_data = data.frame(BRANCH = as.character(branches_aggregates$BRANCH), NVA = as.numeric(branches_aggregates$NVA))
 
   branch_sector_fpt_matrix = lsnr:::MatrixWAS
 
@@ -143,10 +145,10 @@ build_divisions_nva_fpt_was = function(selectedYear)
 
   # build nva fpt dataframe -------------------------- #
 
-  nva_fpt_data = as.data.frame(cbind(divisions_aggregates$BRANCH, divisions_aggregates$NVA))
-  colnames(nva_fpt_data) = c("DIVISION", "NVA")
+  nva_fpt_data = data.frame(DIVISION = as.character(divisions_aggregates$CNA_ACTIVITE), NVA = as.numeric(divisions_aggregates$NVA))
 
   division_sector_fpt_matrix = lsnr:::DivisionMappingWAS
+  division_sector_fpt_matrix$DIVISION[nchar(division_sector_fpt_matrix$DIVISION) == 1] = paste0("0",division_sector_fpt_matrix$DIVISION[nchar(division_sector_fpt_matrix$DIVISION) == 1])
 
   for(i in 1:nrow(nva_fpt_data))
   {
@@ -180,8 +182,8 @@ get_branches_imp_coef_was = function(selectedYear)
 
   eurostat_nama_data = get_eurostat_data(paste0("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nama_10_a64?geo=FR&geo=EU27_2020&unit=CP_MEUR&time=",selectedYear,"&nace_r2=TOTAL&na_item=B1G"))
 
-  fpt_fra =  eurostat_was_gen_data$values[eurostat_was_gen_data$geo=="FR"] / eurostat_nama_data$values[eurostat_nama_data$geo=="FR"]
-  fpt_euu =  eurostat_was_gen_data$values[eurostat_was_gen_data$geo=="EU27_2020"] / eurostat_nama_data$values[eurostat_nama_data$geo=="EU27_2020"]
+  fpt_fra =  eurostat_was_gen_data$values[eurostat_was_gen_data$geo=="FR"] / eurostat_nama_data$value[eurostat_nama_data$geo=="FR"]
+  fpt_euu =  eurostat_was_gen_data$values[eurostat_was_gen_data$geo=="EU27_2020"] / eurostat_nama_data$value[eurostat_nama_data$geo=="EU27_2020"]
 
   branches_imp_coef = fpt_euu / fpt_fra
 

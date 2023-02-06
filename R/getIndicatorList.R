@@ -4,8 +4,7 @@
 #'
 #' @return A table of all 12 supplied non-financial dimensions.
 #'
-#' @seealso \code{\link{buildDivisionsData}}, \code{\link{buildBranchesData}}, \code{\link{buildDiscountedData}}.
-#'
+#' @seealso \code{\link{build_branches_fpt}}, \code{\link{build_divisions_fpt}}, \code{\link{get_indicator_list}}
 #'
 #' @examples
 #' getIndicatorList()
@@ -16,7 +15,6 @@ get_indicator_list = function(){
 
   indicator_list = t(matrix(data = c(
     "ART", "Contribution to crafts and skills", "Contribution aux Métiers d'Art et aux Savoir-Faire", "percentage", "%", "P100","Insee and DGE",1,
-    "DIS", "Remuneration distribution index", "Indice de répartition des rémunérations", "percentage", "%", "P100","Insee and Eurostat",1,
     "ECO", "Contribution to the national economy", "Contribution à l'économie nationale", "percentage", "%", "P100","Insee",1,
     "GEQ", "Gender income inequality index", "Indice d'écart de rémunérations F/H", "percentage", "%", "P100","Insee",1,
     "GHG", "Greenhouse gases emissions intensity", "Intensité d'Émissions de Gaz à effet de serre", "gram of carbon dioxide equivalent by current euro", "gCO2 / €", "GCO2_CPEUR","Insee, Eurostat and the World Bank",1,
@@ -28,7 +26,7 @@ get_indicator_list = function(){
     "SOC", "Contribution to actors of social interest", "Contribution aux Acteurs d'Intérêt social", "percentage", "%", "P100","Insee and 2020 commented Atlas of Social Solidarity Economy",1,
     "WAS", "Waste generation intensity", "Intensité de Production de Déchets", "gram per euro", "g / €", "G_CPEUR","Insee and Eurostat",0,
     "WAT", "Water consumption intensity", "Intensité de Consommation d'Eau", "liter per euro", "L / €", "L_CPEUR", "Insee - Eurostat - SDES (French Ecological Transition Ministry)", 1),
-    ncol = 13
+    ncol = 12
   ))
 
   colnames(indicator_list) = c("Indicator code", "English label", "French label", "Unit label", "Unit symbol", "Unit code", "Data source(s)","Used rounding")

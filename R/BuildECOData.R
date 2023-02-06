@@ -1,16 +1,3 @@
-#'Build and returns all data required to the ECO indicator computations.
-#'
-#'Returns a `list` made up of value added impacts by French branches, imported products associated coefficient,
-#'Data sources and values unit. This data will be used in both BuildBranchesData and BuildDivisionsData functions.
-#'
-#' @param Year Considered year.
-#'
-#' @return An object `list` made up of 4 elements : value added impacts by French branches,
-#' imported products associated coefficient, data sources and values unit.
-#' @seealso \code{\link{BuildGHGData}}, \code{\link{BuildNRGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
-#' @examples
-#' BuildECOData(max(FetchDataAvailability("ECO"))
 #' @noRd
 
 # Données exploitées

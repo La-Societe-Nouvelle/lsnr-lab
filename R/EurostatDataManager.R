@@ -31,5 +31,8 @@ get_eurostat_data = function(endpoint)
 
     data$value[i] = content$value[i]
   }
+
+  data$value = as.numeric(data$value)
+
   return(data)
 }

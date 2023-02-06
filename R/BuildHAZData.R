@@ -1,16 +1,9 @@
-#'Build and returns all data required to the HAZ indicator computations.
+#' @importFrom httr GET
+#' @importFrom jsonlite fromJSON
+#' @importFrom dplyr %>%
+#' @importFrom dplyr filter
+#' @importFrom dplyr mutate
 #'
-#'Returns a `list` made up of value added impacts by French branches, imported products associated coefficient,
-#'Data sources and values unit. This data will be used in both BuildBranchesData and BuildDivisionsData functions.
-#'
-#' @param Year Considered Year.
-#'
-#' @return An object `list` made up of 4 elements : value added impacts by French branches,
-#' imported products associated coefficient, data sources and values unit.
-#' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
-#' @examples
-#' BuildHAZData(max(FetchDataAvailability("HAZ"))
 #' @noRd
 
 build_branches_nva_fpt_haz = function(selectedYear)
@@ -56,8 +49,7 @@ build_branches_nva_fpt_haz = function(selectedYear)
 
   # build nva fpt dataframe -------------------------- #
 
-  nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
-  colnames(nva_fpt_data) = c("BRANCH", "NVA")
+  nva_fpt_data = data.frame(BRANCH = as.character(branches_aggregates$BRANCH), NVA = as.numeric(branches_aggregates$NVA))
 
   for(i in 1:nrow(nva_fpt_data))
   {
@@ -98,7 +90,7 @@ build_divisions_nva_fpt_haz = function(selectedYear)
   {
     # get division
     division = nva_fpt_data$DIVISION[i]
-    branch = divisions$BRANCH[divisions$DIVISION==division]
+    branch = divisions$BRANCH[divisions$DIVISION == division]
 
     # build values
     nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$BRANCH==branch] * divisions_aggregates$NVA[divisions_aggregates$DIVISION==division]
@@ -133,8 +125,6 @@ get_branches_imp_coef_haz = function(selectedYear)
     mutate(area = "FRA") %>%
     filter(year == selectedYear)
 
-  haz_dmc_qnt_fra = data_prodqnt_fra$value + data_impqnt_fra$value - data_expqnt_fra$value
-
   # prodcom data - EUU
   res_prodqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_PRODQNT_PRODCOM_EUU_T")
   res_impqnt = GET("https://api.lasocietenouvelle.org/serie/MACRO_HAZARDOUSPRODUCTS_IMPQNT_PRODCOM_EUU_T")
@@ -158,17 +148,19 @@ get_branches_imp_coef_haz = function(selectedYear)
     rbind(data_prodqnt_euu) %>%
     rbind(data_impqnt_euu) %>%
     rbind(data_expqnt_euu) %>%
-    filter(year == selectedYear)  # control if empty
+    filter(year == selectedYear) %>%
+    pivot_wider(names_from = "aggregate",values_from = "value") # control if empty
 
-  haz_dmc_qnt_euu = data_prodqnt_euu$value + data_impqnt_euu$value - data_expqnt_euu$value
+  haz_dmc_qnt_fra = (prodcom_data$PRODQNT + prodcom_data$IMPQNT - prodcom_data$EXPQNT)[which(prodcom_data$area=="FRA")]
+  haz_dmc_qnt_euu = (prodcom_data$PRODQNT + prodcom_data$IMPQNT - prodcom_data$EXPQNT)[which(prodcom_data$area=="EUU")]
 
   # domestic production
   eurostat_nama_data = get_eurostat_data(paste0("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nama_10_a64?geo=FR&geo=EU27_2020&unit=CP_MEUR&time=",selectedYear,"&nace_r2=TOTAL&na_item=B1G"))
 
-  fpt_fra =  haz_dmc_qnt_fra / eurostat_nama_data$values[eurostat_nama_data$geo=="FR"]
-  fpt_wld =  haz_dmc_qnt_euu / eurostat_nama_data$values[eurostat_nama_data$geo=="EU27_2020"]
+  fpt_fra =  haz_dmc_qnt_fra / eurostat_nama_data$value[eurostat_nama_data$geo=="FR"]
+  fpt_euu =  haz_dmc_qnt_euu / eurostat_nama_data$value[eurostat_nama_data$geo=="EU27_2020"]
 
-  branches_imp_coef = fpt_wld / fpt_fra
+  branches_imp_coef = fpt_euu / fpt_fra
 
   return(branches_imp_coef)
 }

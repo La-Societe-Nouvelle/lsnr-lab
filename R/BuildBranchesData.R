@@ -14,10 +14,10 @@
 #'
 #' @return A table of macroeconomic footprint values by economic activities branch.
 #'
-#' @seealso \code{\link{buildDivisionsData}}, \code{\link{getIndicatorList}}, \code{\link{buildDiscountedData}}.
+#' @seealso \code{\link{build_divisions_fpt}}, \code{\link{get_indicator_list}}.
 #'
 #' @examples
-#' buildBranchesData("ECO",2019)
+#' build_branches_fpt("ECO",2018)
 #' @export
 
 build_branches_fpt = function(indicator, year, verbose = T)
@@ -43,7 +43,7 @@ build_branches_fpt = function(indicator, year, verbose = T)
   #   - FOOTPRINT
   #   - GROSS_IMPACT
 
-  nva_fpt = suppressMessages(get_branches_nva_fpt(indicator,year))
+  nva_fpt = suppressMessages(lsnr:::get_branches_nva_fpt(indicator,year))
   print(nva_fpt)
 
   fpt_branches = get_empty_branches_fpt(branches)
@@ -135,8 +135,6 @@ build_branches_fpt = function(indicator, year, verbose = T)
     # PRD
     next_prd_fpt = update_prd_fpt(fpt_branches,branches_aggregates)
     fpt_branches$PRD_FPT = next_prd_fpt
-    #print(fpt_branches)
-
     #print(fpt_branches)
 
     isResultsStables = checkResultsStables(prev_fpt_branches,fpt_branches) && nbIterations > 1

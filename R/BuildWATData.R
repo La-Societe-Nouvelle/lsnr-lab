@@ -5,14 +5,18 @@
 #'
 #' @param Year Considered year.
 #'
+#' @importFrom dplyr %>%
+#' @importFrom tidyr pivot_wider
+#' @importFrom tidyr pivot_longer
+#'
 #' @return An object `list` made up of 4 elements : value added impacts by French branches,
 #' imported products associated coefficient, data sources and values unit.
 #'
-#' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}}, \code{\link{BuildNRGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
+#' @seealso \code{\link{build_branches_nva_fpt_ghg}}, \code{\link{build_branches_nva_fpt_nrg}},
+#'  \code{\link{build_branches_fpt}}, \code{\link{build_divisions_fpt}}, \code{\link{get_indicator_list}}.
 #'
 #' @examples
-#' BuildWATData(max(FetchDataAvailability("WAT"))
+#' build_branches_nva_fpt_wat(2018)
 #' @noRd
 
 # List of sector
@@ -38,6 +42,11 @@ build_branches_nva_fpt_wat = function(selectedYear)
     pivot_wider(names_from = wat_proc, values_from = value)
 
   # raw fpt ------------------------------------------ #
+
+  wat_cons_coef = data.frame(
+    SECTOR = c("AGR","MIN","IND","ELC","CON","SER"),
+    COEFFICIENT = c(0.82,0.07,0.07,0.1,0.21,0.21)
+  ) %>% pivot_wider(names_from = SECTOR, values_from = COEFFICIENT)
 
   # wat_cons_coef = lsnr:::WaterConsumptionCoefficients
 
@@ -66,8 +75,7 @@ build_branches_nva_fpt_wat = function(selectedYear)
 
   # build nva fpt dataframe -------------------------- #
 
-  nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
-  colnames(nva_fpt_data) = c("BRANCH", "NVA")
+  nva_fpt_data = data.frame(BRANCH = as.character(branches_aggregates$BRANCH), NVA = as.numeric(branches_aggregates$NVA))
 
   branch_sector_fpt_matrix = lsnr:::MatrixWAT
 
@@ -93,6 +101,7 @@ build_divisions_nva_fpt_wat = function(selectedYear)
   # get divisions aggregates ------------------------- #
 
   divisions_aggregates = get_divisions_aggregates(selectedYear)
+  branches_aggregates = get_branches_aggregates(selectedYear)
 
   # fetch data --------------------------------------- #
 
@@ -104,15 +113,22 @@ build_divisions_nva_fpt_wat = function(selectedYear)
 
   # raw fpt ------------------------------------------ #
 
-  raw_fpt = list()
-  raw_fpt$AGR_FPT = wat_abs_data$ABS_AGR[1]*1000 / divisions_aggregates$NVA[divisions_aggregates$BRANCH == "AZ"]
-  raw_fpt$MIN_FPT = wat_abs_data$ABS_MIN[1]*1000 / divisions_aggregates$NVA[divisions_aggregates$BRANCH == "BZ"]
-  raw_fpt$IND_FPT = wat_abs_data$ABS_IND[1]*1000 / sum(divisions_aggregates$NVA[divisions_aggregates$BRANCH %in% c("CA","CB","CC","CD","CE","CF","CG","CH","CI","CJ","CK","CL","CM","DZ","EZ")])
-  raw_fpt$ELC_FPT = wat_abs_data$ABS_ELC_CL[1]*1000 / divisions_aggregates$NVA[divisions_aggregates$BRANCH == "DZ"]
-  raw_fpt$CON_FPT = wat_abs_data$ABS_CON[1]*1000 / divisions_aggregates$NVA[divisions_aggregates$BRANCH == "FZ"]
-  raw_fpt$SER_FPT = wat_abs_data$ABS_SER[1]*1000 / sum(divisions_aggregates$NVA[divisions_aggregates$BRANCH %in% c("GZ","HZ","IZ","JA","JB","JC","KZ","LZ","MA","MB","MC","NZ","OZ","PZ","QA","QB","RZ","SZ","TZ")])
+  wat_cons_coef = data.frame(
+    SECTOR = c("AGR","MIN","IND","ELC","CON","SER"),
+    COEFFICIENT = c(0.82,0.07,0.07,0.1,0.21,0.21)
+  ) %>% pivot_wider(names_from = SECTOR, values_from = COEFFICIENT)
 
-  # sector fpt --------------------------------------- #
+  # wat_cons_coef = lsnr:::WaterConsumptionCoefficients
+
+  raw_fpt = list()
+  raw_fpt$AGR_FPT = (wat_abs_data$ABS_AGR[1]*1000)*wat_cons_coef$AGR / branches_aggregates$NVA[branches_aggregates$BRANCH == "AZ"]
+  raw_fpt$MIN_FPT = (wat_abs_data$ABS_MIN[1]*1000)*wat_cons_coef$MIN / branches_aggregates$NVA[branches_aggregates$BRANCH == "BZ"]
+  raw_fpt$IND_FPT = (wat_abs_data$ABS_IND[1]*1000)*wat_cons_coef$IND / sum(branches_aggregates$NVA[branches_aggregates$BRANCH %in% c("CA","CB","CC","CD","CE","CF","CG","CH","CI","CJ","CK","CL","CM","DZ","EZ")])
+  raw_fpt$ELC_FPT = (wat_abs_data$ABS_ELC_CL[1]*1000)*wat_cons_coef$ELC / branches_aggregates$NVA[branches_aggregates$BRANCH == "DZ"]
+  raw_fpt$CON_FPT = (wat_abs_data$ABS_CON[1]*1000)*wat_cons_coef$CON / branches_aggregates$NVA[branches_aggregates$BRANCH == "FZ"]
+  raw_fpt$SER_FPT = (wat_abs_data$ABS_SER[1]*1000)*wat_cons_coef$SER / sum(branches_aggregates$NVA[branches_aggregates$BRANCH %in% c("GZ","HZ","IZ","JA","JB","JC","KZ","LZ","MA","MB","MC","NZ","OZ","PZ","QA","QB","RZ","SZ","TZ")])
+
+    # sector fpt --------------------------------------- #
 
   sector_fpt_list = list()
 
@@ -131,6 +147,7 @@ build_divisions_nva_fpt_wat = function(selectedYear)
   nva_fpt_data = data.frame(DIVISION = as.character(divisions_aggregates$CNA_ACTIVITE), NVA = as.numeric(divisions_aggregates$NVA))
 
   division_sector_fpt_matrix = lsnr:::DivisionMappingWAT
+  division_sector_fpt_matrix$DIVISION[nchar(division_sector_fpt_matrix$DIVISION)==1] = paste0("0",division_sector_fpt_matrix$DIVISION[nchar(division_sector_fpt_matrix$DIVISION)==1])
 
   for(i in 1:nrow(nva_fpt_data))
   {
@@ -156,15 +173,15 @@ get_branches_imp_coef_wat = function(selectedYear)
   main = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/env_wat_abs"
   filters = paste0("?geo=FR&unit=MIO_M3&time=",selectedYear,"&wat_src=FRW")
 
-  eurostat_wat_abs_data = get_eurostat_data(paste0(main,filters)) %>%
+  eurostat_wat_abs_data = lsnr:::get_eurostat_data(paste0(main,filters)) %>%
     pivot_wider(names_from = wat_proc, values_from = value)
 
   # domestic production
 
   eurostat_nama_data = get_eurostat_data(paste0("https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nama_10_a64?geo=FR&geo=EU27_2020&unit=CP_MEUR&time=",selectedYear,"&nace_r2=TOTAL&na_item=B1G"))
 
-  fpt_fra =  eurostat_wat_abs_data$values[eurostat_wat_abs_data$geo=="FR"] / eurostat_nama_data$values[eurostat_nama_data$geo=="FR"]
-  fpt_euu =  eurostat_wat_abs_data$values[eurostat_wat_abs_data$geo=="EU27_2020"] / eurostat_nama_data$values[eurostat_nama_data$geo=="EU27_2020"]
+  fpt_fra =  eurostat_wat_abs_data$ABST[eurostat_wat_abs_data$geo=="FR"] / eurostat_nama_data$value[eurostat_nama_data$geo=="FR"]
+  fpt_euu =  eurostat_wat_abs_data$ABST[eurostat_wat_abs_data$geo=="FR"] / eurostat_nama_data$value[eurostat_nama_data$geo=="FR"] #LACK of EU impact data
 
   branches_imp_coef = fpt_euu / fpt_fra
 

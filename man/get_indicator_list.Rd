@@ -20,5 +20,5 @@ getIndicatorList()
 
 }
 \seealso{
-\code{\link{buildDivisionsData}}, \code{\link{buildBranchesData}}, \code{\link{buildDiscountedData}}.
+\code{\link{build_branches_fpt}}, \code{\link{build_divisions_fpt}}, \code{\link{get_indicator_list}}
 }

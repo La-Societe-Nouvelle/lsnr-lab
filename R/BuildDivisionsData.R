@@ -16,10 +16,10 @@
 #'
 #' @return A table of macroeconomic footprint values by economic activities division.
 #'
-#' @seealso \code{\link{buildBranchesData}}, \code{\link{getIndicatorList}}, \code{\link{buildDiscountedData}}.
+#' @seealso \code{\link{build_branches_fpt}}, \code{\link{get_indicator_list}}
 #'
 #' @examples
-#' buildDivisions("ECO",2019)
+#' build_divisions_fpt("ECO",2018)
 #' @export
 
 build_divisions_fpt = function(indicator,year,verbose=T)

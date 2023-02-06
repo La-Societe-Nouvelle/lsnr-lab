@@ -23,8 +23,8 @@ It involves, on one hand, a macroeconomic input-output modelization of the Frenc
 the rest of the world, based on INSEE IOTs, and requires, on the other hand, direct impact data from institutional sources.
 }
 \examples{
-buildBranchesData("ECO",2019)
+build_branches_fpt("ECO",2018)
 }
 \seealso{
-\code{\link{buildDivisionsData}}, \code{\link{getIndicatorList}}, \code{\link{buildDiscountedData}}.
+\code{\link{build_divisions_fpt}}, \code{\link{get_indicator_list}}.
 }

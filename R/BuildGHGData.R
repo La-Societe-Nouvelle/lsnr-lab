@@ -1,21 +1,8 @@
-#'Build and returns all data required to the GHG indicator computations.
-#'
-#'Returns a `list` made up of value added impacts by French branches, imported products associated coefficient,
-#'Data sources, values unit and value added impacts by French divisions. This data will be used in both BuildBranchesData and BuildDivisionsData functions.
-#'
-#' @param Year Considered year.
-#'
 #' @importFrom WDI WDI
 #' @importFrom jsonlite fromJSON
 #' @importFrom httr GET
 #' @importFrom tidyr pivot_longer
 #'
-#' @return An object `list` made up of 5 elements : value added impacts by French branches,
-#' imported products associated coefficient, data sources, values unit and value added impacts by French divisions.
-#' @seealso \code{\link{BuildECOData}}, \code{\link{BuildNRGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
-#' @examples
-#' BuildGHGData(max(FetchDataAvailability("GHG"))
 #' @noRd
 
 build_branches_nva_fpt_ghg = function(selectedYear)

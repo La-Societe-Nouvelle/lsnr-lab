@@ -25,8 +25,8 @@ Specifically BuildDivisionsData compute division footprints by adjusting branch 
 division economic aggregate values.
 }
 \examples{
-buildDivisions("ECO",2019)
+build_divisions_fpt("ECO",2018)
 }
 \seealso{
-\code{\link{buildBranchesData}}, \code{\link{getIndicatorList}}, \code{\link{buildDiscountedData}}.
+\code{\link{build_branches_fpt}}, \code{\link{get_indicator_list}}
 }

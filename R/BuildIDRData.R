@@ -1,18 +1,9 @@
-#'Build and returns all data required to the DIS indicator computations.
-#'
-#'Returns a `list` made up of value added impacts by French branches, imported products associated coefficient,
-#'Data sources and values unit. This data will be used in both BuildBranchesData and BuildDivisionsData functions.
-#'
-#' @param Year Considered year.
-#'
 #' @importFrom curl curl_download
+#' @importFrom stringr str_remove
+#' @importFrom stringr str_locate_all
+#' @importFrom stringr str_detect
+#' @importFrom data.table fread
 #'
-#' @return An object `list` made up of 4 elements : value added impacts by French branches,
-#' imported products associated coefficient, data sources and values unit.
-#' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
-#' @examples
-#' BuildDISData(max(FetchDataAvailability("DIS"))
 #' @noRd
 
 build_branches_nva_fpt_idr = function(selectedYear)

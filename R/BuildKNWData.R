@@ -1,20 +1,9 @@
-#'Build and returns all data required to the KNW indicator computations.
-#'
-#'Returns a `list` made up of value added impacts by French branches, imported products associated coefficient,
-#'Data sources and values unit. This data will be used in both BuildBranchesData and BuildDivisionsData functions.
-#'
-#' @param Year Considered year.
-#'
 #' @importFrom eurostat get_eurostat
-#' @return An object `list` made up of 4 elements : value added impacts by French branches,
-#' imported products associated coefficient, data sources and values unit.
-#' @seealso \code{\link{BuildECOData}}, \code{\link{BuildGHGData}},
-#'  \code{\link{BuildBranchesData}}, \code{\link{BuildDivisionsData}}, \code{\link{FetchDataAvailability}}.
-#' @examples
-#' build_branches_nva_fpt_knw(2018)
+#' @importFrom dplyr %>%
+#' @importFrom dplyr filter
+#' @importFrom tidyr pivot_longer
+#'
 #' @noRd
-
-
 
 build_branches_nva_fpt_knw = function(selectedYear)
 {
@@ -99,16 +88,16 @@ build_divisions_nva_fpt_knw = function(selectedYear)
 
   # build nva fpt dataframe -------------------------- #
 
-  nva_fpt_data = as.data.frame(cbind(divisions_aggregates$BRANCH, divisions_aggregates$NVA))
-  colnames(nva_fpt_data) = c("BRANCH", "NVA")
+  nva_fpt_data = data.frame(DIVISION = as.character(divisions_aggregates$CNA_ACTIVITE), NVA = as.numeric(divisions_aggregates$NVA))
 
-  branch_sector_fpt_matrix =lsnr:::MatrixKNW
+  branch_sector_fpt_matrix =lsnr:::DivisionMappingKNW
+  branch_sector_fpt_matrix$DIVISION[nchar(branch_sector_fpt_matrix$DIVISION)==1] = paste0("0",branch_sector_fpt_matrix$DIVISION[nchar(branch_sector_fpt_matrix$DIVISION)==1])
 
   for(i in 1:nrow(nva_fpt_data))
   {
     # get sector
-    branch = nva_fpt_data$BRANCH[i]
-    sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$BRANCH==branch]
+    division = nva_fpt_data$DIVISION[i]
+    sector = branch_sector_fpt_matrix$SECTOR[branch_sector_fpt_matrix$DIVISION==division]
 
     # build values
     nva_fpt_data$GROSS_IMPACT[i] = sector_fpt$FOOTPRINT[sector_fpt$SECTOR==sector]/100 * divisions_aggregates$NVA[i]
@@ -125,13 +114,13 @@ get_branches_imp_coef_knw = function(selectedYear)
   # fetch data
 
   trng_cvt_data = get_eurostat("trng_cvt_16n2") %>%
-    filter(geo == "FR",
+    filter(geo %in% c("FR","EU28"),
            cost =="TOTAL",
            time == paste0(selectedYear,"-01-01"),
            unit =="PC")
 
-  fpt_fra =  eurostat_data$values[eurostat_data$geo=="FR"]
-  fpt_euu =  eurostat_data$values[eurostat_data$geo=="EU28"]
+  fpt_fra =  trng_cvt_data$values[trng_cvt_data$geo=="FR"]
+  fpt_euu =  trng_cvt_data$values[trng_cvt_data$geo=="EU28"]
 
   branches_imp_coef = fpt_euu / fpt_fra
 
