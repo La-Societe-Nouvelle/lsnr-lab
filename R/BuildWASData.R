@@ -172,11 +172,12 @@ get_branches_imp_coef_was = function(selectedYear)
   # fetch data
 
   eurostat_was_gen_data = get_eurostat("env_wasgen") %>%
-    filter(geo %in% c("FR","EU27_2020")) %>%
-    filter(waste=="TOTAL") %>%
-    filter(hazard=="HAZ_NHAZ") %>%
-    filter(unit=="T") %>%
-    filter(time == paste0(selectedYear,"-01-01"))
+    filter(geo %in% c("FR","EU27_2020"),
+           waste=="TOTAL",
+           hazard=="HAZ_NHAZ",
+           unit=="T",
+           time == paste0(selectedYear,"-01-01"),
+           nace_r2 == "TOTAL_HH")
 
   # domestic production
 

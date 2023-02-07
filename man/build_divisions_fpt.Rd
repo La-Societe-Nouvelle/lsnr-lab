@@ -10,6 +10,8 @@ build_divisions_fpt(indicator, year, verbose = T)
 \item{indicator}{requested non-financial dimension.}
 
 \item{year}{year of requested data.}
+
+\item{verbose}{TRUE by default, FALSE refers to the silent mode}
 }
 \value{
 A table of macroeconomic footprint values by economic activities division.
@@ -25,7 +27,18 @@ Specifically BuildDivisionsData compute division footprints by adjusting branch 
 division economic aggregate values.
 }
 \examples{
-build_divisions_fpt("ECO",2018)
+build_divisions_fpt("ART",2015)
+build_divisions_fpt("ECO",2019)
+build_divisions_fpt("GEQ",2018)
+build_divisions_fpt("GHG",2019)
+build_divisions_fpt("HAZ",2019)
+build_divisions_fpt("IDR",2019)
+build_divisions_fpt("KNW",2015)
+build_divisions_fpt("MAT",2019)
+build_divisions_fpt("NRG",2019)
+build_divisions_fpt("SOC",2015)
+build_divisions_fpt("WAS",2018)
+build_divisions_fpt("WAT",2018)
 }
 \seealso{
 \code{\link{build_branches_fpt}}, \code{\link{get_indicator_list}}

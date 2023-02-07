@@ -10,6 +10,8 @@ build_branches_fpt(indicator, year, verbose = T)
 \item{indicator}{requested non-financial dimension.}
 
 \item{year}{year of requested data.}
+
+\item{verbose}{TRUE by default, FALSE refers to the silent mode}
 }
 \value{
 A table of macroeconomic footprint values by economic activities branch.
@@ -23,7 +25,18 @@ It involves, on one hand, a macroeconomic input-output modelization of the Frenc
 the rest of the world, based on INSEE IOTs, and requires, on the other hand, direct impact data from institutional sources.
 }
 \examples{
-build_branches_fpt("ECO",2018)
+build_branches_fpt("ART",2015)
+build_branches_fpt("ECO",2019)
+build_branches_fpt("GEQ",2019)
+build_branches_fpt("GHG",2019)
+build_branches_fpt("HAZ",2019)
+build_branches_fpt("IDR",2019)
+build_branches_fpt("KNW",2015)
+build_branches_fpt("MAT",2019)
+build_branches_fpt("NRG",2019)
+build_branches_fpt("SOC",2015)
+build_branches_fpt("WAS",2018)
+build_branches_fpt("WAT",2019)
 }
 \seealso{
 \code{\link{build_divisions_fpt}}, \code{\link{get_indicator_list}}.
