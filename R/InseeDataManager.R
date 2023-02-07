@@ -58,6 +58,12 @@ get_products_aggregates = function(year)
     )
     datalist[[i]] = insee_data
   }
+
+  if(any(lapply(datalist,nrow) == 0))
+  {
+    stop(paste0("Données économiques des produits indisponibles pour l'année ", year))
+  }
+
   insee_ere_data = do.call(rbind,datalist)
 
   # format dataframe
@@ -95,6 +101,11 @@ get_branches_aggregates = function(year)
     filter = "A...VAL.....BRUT"
   )
 
+  if(nrow(insee_cpeb_data) == 0)
+  {
+    stop(paste0("Comptes de production et d'exploitation des branches indisponibles pour l'année ", year))
+  }
+
   cpeb_data = insee_cpeb_data %>%
     filter(substr(CNA_ACTIVITE,1,3)=="A38") %>%
     filter(OPERATION %in% c('P1','P2','B1G')) %>%
@@ -110,6 +121,11 @@ get_branches_aggregates = function(year)
     endPeriod = year,
     filter="A....VAL.AN11...CCF.."
   )
+
+  if(nrow(insee_ccf_data) == 0)
+  {
+    stop(paste0("Données des consommations de capital fixe des branches indisponibles pour l'année ", year))
+  }
 
   ccf_data = insee_ccf_data %>%
     filter(substr(CNA_ACTIVITE,1,3)=="A38") %>%
@@ -151,6 +167,11 @@ get_divisions_aggregates = function(year)
     endPeriod = year,
     filter = "A...VAL.....BRUT"
   )
+
+  if(nrow(insee_cpeb_data) == 0)
+  {
+    stop(paste0("Comptes de production et d'exploitation des divisions indisponibles pour l'année ", year))
+  }
 
   cpeb_data = insee_cpeb_data %>%
     filter(substr(CNA_ACTIVITE,1,3)=="A88") %>%
@@ -200,6 +221,11 @@ get_ic_matrix = function(year)
     endPeriod = year
   )
 
+  if(nrow(insee_tei_data) == 0)
+  {
+    stop(paste0("Tableau des entrées intermédiaires indisponible pour l'année ", year))
+  }
+
   tei_data = insee_tei_data %>%
     filter(substr(CNA_ACTIVITE,1,3)=="A38") %>%
     filter(substr(CNA_PRODUIT,1,3)=="A38") %>%
@@ -236,6 +262,11 @@ get_reversed_ic_matrix = function(year)
     startPeriod = year,
     endPeriod = year
   )
+
+  if(nrow(insee_tei_data) == 0)
+  {
+    stop(paste0("Tableau des entrées intermédiaires indisponible pour l'année ", year))
+  }
 
   tei_data = insee_tei_data %>%
     filter(substr(CNA_ACTIVITE,1,3)=="A38" | CNA_ACTIVITE == "NNTOTAL") %>%
@@ -277,6 +308,11 @@ get_cfc_matrix = function (year)
     filter="A....VAL....CCF.."
   )
 
+  if(nrow(insee_ccf_data) == 0)
+  {
+    stop(paste0("Données des consommations de capital fixe des branches indisponibles pour l'année ", year))
+  }
+
   ccf_data = insee_ccf_data %>%
     filter(substr(CNA_ACTIVITE,1,3)=="A38") %>%
     mutate(CNA_ACTIVITE = str_remove(CNA_ACTIVITE,"A38-")) %>%
@@ -295,6 +331,11 @@ get_cfc_matrix = function (year)
     endPeriod = year,
     filter="A....VAL....ENC..BRUT"
   )
+
+  if(nrow(insee_enc_data) == 0)
+  {
+    stop(paste0("Données des encours de capital fixe des branches indisponibles pour l'année ", year))
+  }
 
   enc_data = insee_enc_data %>%
     filter(substr(CNA_ACTIVITE,1,3)=="A38") %>%
@@ -414,7 +455,13 @@ get_cfc_matrix = function (year)
 
 get_transfers_matrix = function(year)
 {
-  dom = read.csv(paste0("https://raw.githubusercontent.com/La-Societe-Nouvelle/LaSocieteNouvelle-defautdata/master/DefaultData-LSN/donnees/tess_",year,"_dom.csv"),sep=";")
+  dom = try(read.csv(paste0("https://raw.githubusercontent.com/La-Societe-Nouvelle/LaSocieteNouvelle-defautdata/master/DefaultData-LSN/donnees/tess_",year,"_dom.csv"),sep=";"),silent=T)
+
+  if(class(dom) == "try-error")
+  {
+    stop(paste0("Tableau entrées-sorties symétrique domestique indisponible pour l'année ", year))
+  }
+
   names(dom)=dom[8,]
   dom = dom[-c(1:7),-1]
   cdom = as.data.frame(apply(dom,2,function(x)gsub('\\s+', '',x)))

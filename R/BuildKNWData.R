@@ -53,6 +53,11 @@ build_branches_nva_fpt_knw = function(selectedYear)
     nva_fpt_data$UNIT_FOOTPRINT[i] = "P100"
   }
 
+  for(i in which(nva_fpt_data$BRANCH %in% c("MB","PZ"))){ #case for R&D and teaching activities
+    nva_fpt_data$FOOTPRINT[i] = 100
+    nva_fpt_data$GROSS_IMPACT[i] = nva_fpt_data$NVA[i]
+  }
+
   return(nva_fpt_data)
   # -------------------------------------------------- #
 }
@@ -105,6 +110,11 @@ build_divisions_nva_fpt_knw = function(selectedYear)
     nva_fpt_data$UNIT_FOOTPRINT[i] = "P100"
   }
 
+  for(i in which(nva_fpt_data$DIVISION %in% c("72","85"))){ #case for R&D and teaching activities
+    nva_fpt_data$FOOTPRINT[i] = 100
+    nva_fpt_data$GROSS_IMPACT[i] = nva_fpt_data$NVA[i]
+  }
+
   return(nva_fpt_data)
   # -------------------------------------------------- #
 }
@@ -117,7 +127,8 @@ get_branches_imp_coef_knw = function(selectedYear)
     filter(geo %in% c("FR","EU28"),
            cost =="TOTAL",
            time == paste0(selectedYear,"-01-01"),
-           unit =="PC")
+           unit =="PC",
+           nace_r2 == "TOTAL")
 
   fpt_fra =  trng_cvt_data$values[trng_cvt_data$geo=="FR"]
   fpt_euu =  trng_cvt_data$values[trng_cvt_data$geo=="EU28"]

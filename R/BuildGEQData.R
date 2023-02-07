@@ -20,7 +20,7 @@ build_branches_nva_fpt_geq = function(selectedYear)
   if(sum(grepl(paste0("geq",selectedYear,".csv"),list_files))==1)
   {
     fl = list_files[which(grepl(paste0("geq",selectedYear,".csv"),list_files))]
-    data_geq = read.csv(fl,header = T,encoding = 'latin1',sep = ";")
+    DataGEQ = read.csv(fl,header = T,encoding = 'latin1',sep = ";")
   }
   else
   {
@@ -112,7 +112,7 @@ build_divisions_nva_fpt_geq = function(selectedYear)
   if(sum(grepl(paste0("geq",selectedYear,".csv"),list_files))==1)
   {
     fl = list_files[which(grepl(paste0("geq",selectedYear,".csv"),list_files))]
-    DataGEQ = read.csv(fl,header = T,encoding = 'latin1',sep = ";")
+    branches_fpt = read.csv(fl,header = T,encoding = 'latin1',sep = ";")
   }
   else
   {

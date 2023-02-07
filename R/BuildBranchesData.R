@@ -11,13 +11,25 @@
 #'
 #' @param year year of requested data.
 #' @param indicator requested non-financial dimension.
+#' @param verbose TRUE by default, FALSE refers to the silent mode
 #'
 #' @return A table of macroeconomic footprint values by economic activities branch.
 #'
 #' @seealso \code{\link{build_divisions_fpt}}, \code{\link{get_indicator_list}}.
 #'
 #' @examples
-#' build_branches_fpt("ECO",2018)
+#' build_branches_fpt("ART",2015)
+#' build_branches_fpt("ECO",2019)
+#' build_branches_fpt("GEQ",2019)
+#' build_branches_fpt("GHG",2019)
+#' build_branches_fpt("HAZ",2019)
+#' build_branches_fpt("IDR",2019)
+#' build_branches_fpt("KNW",2015)
+#' build_branches_fpt("MAT",2019)
+#' build_branches_fpt("NRG",2019)
+#' build_branches_fpt("SOC",2015)
+#' build_branches_fpt("WAS",2018)
+#' build_branches_fpt("WAT",2019)
 #' @export
 
 build_branches_fpt = function(indicator, year, verbose = T)
@@ -44,7 +56,6 @@ build_branches_fpt = function(indicator, year, verbose = T)
   #   - GROSS_IMPACT
 
   nva_fpt = suppressMessages(lsnr:::get_branches_nva_fpt(indicator,year))
-  print(nva_fpt)
 
   fpt_branches = get_empty_branches_fpt(branches)
   fpt_products = get_empty_products_fpt(branches)
@@ -55,7 +66,7 @@ build_branches_fpt = function(indicator, year, verbose = T)
   print("---------- Financial data loading ----------")
 
   print("Products aggregates...")
-  products_aggregates = suppressMessages(get_products_aggregates(year))
+  products_aggregates = suppressMessages(lsnr:::get_products_aggregates(year))
 
   print("Branches aggregates...")
   branches_aggregates = suppressMessages(get_branches_aggregates(year))
