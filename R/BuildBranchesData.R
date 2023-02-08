@@ -81,7 +81,7 @@ build_branches_fpt = function(indicator, year, verbose = T)
   tr_matrix = suppressMessages(get_transfers_matrix(year))
 
   #
-  print("---------- Initiatilisations ----------")
+  print("---------- Initialisations ----------")
 
   print('init branches footprints')
 
