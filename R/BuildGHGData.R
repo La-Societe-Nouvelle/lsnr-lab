@@ -118,24 +118,14 @@ build_divisions_nva_fpt_ghg = function(selectedYear)
 
   # sector fpt --------------------------------------- #
 
-  sector_fpt_list = list()
+  sector_fpt = data.frame(SECTOR = unique(divisions$SECTOR),
+                               FOOTPRINT = NA)
 
-  for (i in 1:nrow(divisions))
+  for(i in sector_fpt$SECTOR)
   {
-    code_nace = divisions$SECTOR[i]
-    if (code_nace %in% ac_ainah_data$nace_r2) {
-      if (divisions_aggregates$NVA[i]>0) {
-        sector_fpt_list[[code_nace]] = ac_ainah_data$value[ac_ainah_data$nace_r2==code_nace] / divisions_aggregates$NVA[i]
-      } else {
-        print(code_nace)
-        sector_fpt_list[[code_nace]] = 0 # null ?
-      }
-    }
+    divs = divisions$DIVISION[divisions$SECTOR == i]
+    sector_fpt$FOOTPRINT[sector_fpt$SECTOR == i] = ac_ainah_data$value[ac_ainah_data$nace_r2 == i] / sum(divisions_aggregates$NVA[divisions_aggregates$CNA_ACTIVITE %in% divs])
   }
-
-  sector_fpt = cbind.data.frame(sector_fpt_list) %>%
-    pivot_longer(cols = names(sector_fpt_list))
-  colnames(sector_fpt) = c("SECTOR", "FOOTPRINT")
 
   # build nva fpt dataframe -------------------------- #
 
