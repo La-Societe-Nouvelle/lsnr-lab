@@ -19,7 +19,6 @@ VignetteBuilder: knitr
 Imports: 
     dplyr,
     eurostat,
-    glmnet,
     insee,
     stringr,
     tidyr,

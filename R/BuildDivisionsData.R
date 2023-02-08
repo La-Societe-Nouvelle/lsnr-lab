@@ -67,6 +67,10 @@ build_divisions_fpt = function(indicator,year,verbose=T)
     fpt_divisions$IC_FPT[i]  = as.numeric(fpt_branches %>% filter(BRANCH == branch & AGGREGATE == "IC") %>% select(VALUE))
     fpt_divisions$CFC_FPT[i]  = as.numeric(fpt_branches %>% filter(BRANCH == branch & AGGREGATE == "CFC") %>% select(VALUE))
     fpt_divisions$PRD_FPT[i] = (fpt_divisions$NVA_FPT[i]*divisions_aggregates$NVA[i] + fpt_divisions$IC_FPT[i]*divisions_aggregates$IC[i] + fpt_divisions$CFC_FPT[i]*divisions_aggregates$CFC[i]) / divisions_aggregates$PRD[i]
+
+    fpt_divisions$RESS_FPT[i]  = as.numeric(fpt_branches %>% filter(BRANCH == branch & AGGREGATE == "RESS") %>% select(VALUE))
+    fpt_divisions$IMP_FPT[i]  = as.numeric(fpt_branches %>% filter(BRANCH == branch & AGGREGATE == "IMP") %>% select(VALUE))
+    fpt_divisions$TRESS_FPT[i]  = as.numeric(fpt_branches %>% filter(BRANCH == branch & AGGREGATE == "TRESS") %>% select(VALUE))
   }
 
   output_2 = fpt_divisions %>%
@@ -78,6 +82,8 @@ build_divisions_fpt = function(indicator,year,verbose=T)
   output_2$YEAR = year
   output_2$UNIT = indic_metadata$UNIT[indic_metadata$CODE==toupper(indicator)]
   output_2$INDIC = toupper(indicator)
+
+
 
   if(verbose == F)
   {
