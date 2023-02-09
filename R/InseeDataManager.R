@@ -243,8 +243,12 @@ get_ic_matrix = function(year)
     ic_matrix[,product] = c(0)
     for (i in 1:36)
     {
-      if (sum(tei_data[,product]) > 0) {
-        ic_matrix[i,product] = round(tei_data[i,product] / sum(tei_data[,product]), digits = 6)
+      if (sum(tei_data[,product],na.rm = T) > 0) {
+        ic_matrix[i,product] = round(tei_data[i,product] / sum(tei_data[,product],na.rm = T), digits = 6)
+        if(is.nan(ic_matrix[i,product]) || is.na(ic_matrix[i,product]) || is.null(ic_matrix[i,product]))
+        {
+          ic_matrix[i,product] = 0
+        }
       }
     }
   }
