@@ -459,9 +459,16 @@ get_cfc_matrix = function (year)
 
 get_transfers_matrix = function(year)
 {
-  list = load("R/sysdata.rda")
-
-  dom = try(get(paste0("tess_",year,"_dom")),silent = T)
+  dom = list(lsnr:::tess_2010_dom,
+       lsnr:::tess_2011_dom,
+       lsnr:::tess_2012_dom,
+       lsnr:::tess_2013_dom,
+       lsnr:::tess_2015_dom,
+       lsnr:::tess_2016_dom,
+       lsnr:::tess_2017_dom,
+       lsnr:::tess_2018_dom,
+       lsnr:::tess_2019_dom
+       )[[which(c(2010:2013,2015:2019) == year)]]
 
   if(class(dom) == "try-error")
   {
