@@ -459,7 +459,8 @@ get_cfc_matrix = function (year)
 
 get_transfers_matrix = function(year)
 {
-  dom = try(read.csv(paste0("https://raw.githubusercontent.com/La-Societe-Nouvelle/LaSocieteNouvelle-defautdata/master/DefaultData-LSN/donnees/tess_",year,"_dom.csv"),sep=";"),silent=T)
+
+  dom = try(get(paste0("tess_",year,"_dom")),silent = T)
 
   if(class(dom) == "try-error")
   {
@@ -470,7 +471,6 @@ get_transfers_matrix = function(year)
   dom = dom[-c(1:7),-1]
   cdom = as.data.frame(apply(dom,2,function(x)gsub('\\s+', '',x)))
 
-  #print(sapply(cdom, typeof))
   branches = lsnr:::Branches
 
   tr_matrix = as.data.frame(branches$CODE)
