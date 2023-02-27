@@ -17,7 +17,7 @@ get_indicator_list = function(){
     "ART", "Contribution to crafts and skills", "Contribution aux Métiers d'Art et aux Savoir-Faire", "percentage", "%", "P100","Insee and DGE",1,
     "ECO", "Contribution to the national economy", "Contribution à l'économie nationale", "percentage", "%", "P100","Insee",1,
     "GEQ", "Gender income inequality index", "Indice d'écart de rémunérations F/H", "percentage", "%", "P100","Insee",1,
-    "GHG", "Greenhouse gases emissions intensity", "Intensité d'Émissions de Gaz à effet de serre", "gram of carbon dioxide equivalent by current euro", "gCO2 / €", "GCO2_CPEUR","Insee, Eurostat and the World Bank",1,
+    "GHG", "Greenhouse gases emissions intensity", "Intensité d'Émissions de Gaz à effet de serre", "gram of carbon dioxide equivalent by current euro", "gCO2 / €", "GCO2E_CPEUR","Insee, Eurostat and the World Bank",1,
     "HAZ", "Hazardous products use intensity", "Intensité d'Utilisation de produits dangereux", "gram per euro", "g / €", "G_CPEUR","Insee and Eurostat",1,
     "IDR", "Interdecile ratio", "Rapport interdécile d9/d1", "Index", NA, "IND", "Insee", 2,
     "KNW", "Contribution to the skills and knowledge development", "Contribution à l'Evolution des compétences et des connaissances", "percentage", "%", "P100","Insee and Eurostat",1,
