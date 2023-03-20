@@ -78,7 +78,7 @@ build_branches_fpt = function(indicator, year, verbose = T)
   cfc_matrix = suppressMessages(get_cfc_matrix(year))
 
   print("Transfers matrix...")
-  tr_matrix = suppressMessages(get_transfers_matrix(year))
+  tr_matrix = suppressMessages(lsnr:::get_transfers_matrix(year))
 
   #
   print("---------- Initialisations ----------")
@@ -252,7 +252,7 @@ update_ress_fpt = function(prev_branches_fpt,tr_matrix)
   next_fpt = c(0)
   for (i in 1:nrow(prev_branches_fpt)) {
     branch = prev_branches_fpt$BRANCH[i]
-    next_fpt[i] = round(sum(tr_matrix[,branch] * prev_branches_fpt$PRD_FPT), digits = 6)
+    next_fpt[i] = round(sum(tr_matrix[tr_matrix$PRODUCT == branch,-1] * prev_branches_fpt$PRD_FPT), digits = 6)
   }
   return(next_fpt)
 }

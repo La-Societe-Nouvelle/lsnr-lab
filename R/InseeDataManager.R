@@ -7,6 +7,7 @@
 #' @importFrom insee get_insee_dataset
 #' @importFrom tidyr pivot_wider
 #' @importFrom stringr str_remove
+#' @importFrom tibble add_column
 #'
 #' @noRd
 
@@ -475,29 +476,16 @@ get_transfers_matrix = function(year)
     stop(paste0("Tableau entrées-sorties symétrique domestique indisponible pour l'année ", year))
   }
 
-  names(dom)=dom[8,]
-  dom = dom[-c(1:7),-1]
-  cdom = as.data.frame(apply(dom,2,function(x)gsub('\\s+', '',x)))
-
   branches = lsnr:::Branches
 
-  tr_matrix = as.data.frame(branches$CODE)
-  names(tr_matrix) = "PRODUCT"
+  names(dom)=dom[8,]
+  dom = dom[-c(1:7),-1]
 
-  row_offset = 2
-  col_offset = 2
+  tr_matrix = as.data.frame(apply(dom,2,function(x)gsub('\\s+', '',x)))[c(3:39),c(3:39)]
 
-  for(j in 1:nrow(branches)) # product (TEES)
-  {
-    branch = branches$CODE[j]
-    tr_matrix[,branch] = c(0)
-    for(i in 1:nrow(branches)) # branch (TEES)
-    {
-      if (as.numeric(cdom[row_offset+j,40])!=0 && !is.na(as.numeric(cdom[row_offset+j,col_offset+i]))) {
-        tr_matrix[i,branch] = as.numeric(cdom[row_offset+j,col_offset+i]) / as.numeric(cdom[row_offset+j,40])
-      }
-    }
-  }
+  tr_matrix = as.data.frame(lapply(tr_matrix, as.numeric))
+
+  tr_matrix = (tr_matrix / rowSums(tr_matrix)) %>% add_column(PRODUCT = branches$CODE,.before = "AZ")
 
   return(tr_matrix)
 }
