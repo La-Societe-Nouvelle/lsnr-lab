@@ -28,7 +28,8 @@ build_branches_nva_fpt_ghg = function(selectedYear)
     "time=",selectedYear,"&",
     "airpol=","GHG")
 
-  ac_ainah_data = get_eurostat_data(paste0(endpoint,filters))
+  ac_ainah_data = try(get_eurostat_data(paste0(endpoint,filters)),silent = T)
+
   ac_ainah_data$value = unlist(ac_ainah_data$value)
 
   # sector fpt --------------------------------------- #
@@ -113,7 +114,20 @@ build_divisions_nva_fpt_ghg = function(selectedYear)
   filters = paste0("?geo=FR&unit=T&time=",selectedYear,"&airpol=GHG&")
   nace = paste0("nace_r2=",set, collapse = "&")
 
-  ac_ainah_data = get_eurostat_data(paste0(main,filters,nace))
+  ac_ainah_data = try(get_eurostat_data(paste0(main,filters,nace)),silent = T)
+
+  if(class(ac_ainah_data) == "try-error" & selectedYear <= 2030 & selectedYear > 2020)
+  {
+    nva_fpt_data = read.csv("C:/Users/Joris/OneDrive - La Société Nouvelle/Documents/Travaux statistiques/Travaux appliqués/Structure de l'économie française/Comptes extrafinanciers/GHG_D.csv",
+                            sep = ";",encoding = 'latin1',colClasses = "character") %>%
+      mutate(FOOTPRINT = as.numeric(FOOTPRINT), NVA = as.numeric(NVA), GROSS_IMPACT = as.numeric(GROSS_IMPACT)) %>%
+      filter(year == selectedYear) %>%
+      select(!year) %>%
+      arrange(DIVISION)
+
+    return(nva_fpt_data)
+  }
+
   ac_ainah_data$value = unlist(ac_ainah_data$value)
 
   # sector fpt --------------------------------------- #
@@ -154,12 +168,14 @@ get_branches_imp_coef_ghg = function(year)
 {
   # fetch data
 
-  wdi_data = WDI(
+  wdi_data = try(WDI(
     indicator = "EN.ATM.CO2E.KD.GD",
     country=c("FR","1W"),
     start = year,
     end = year
-  )
+  ),silent = T)
+
+  fyear = year
 
   fpt_fra =  wdi_data$EN.ATM.CO2E.KD.GD[wdi_data$iso2c=="FR"]
   fpt_wld =  wdi_data$EN.ATM.CO2E.KD.GD[wdi_data$iso2c=="1W"]

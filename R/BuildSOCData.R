@@ -26,6 +26,10 @@ build_branches_nva_fpt_soc = function(selectedYear)
     stop(paste0("Données indisponibles pour ",selectedYear))
   })
 
+  if("NVA_FPT" %in% names(ess_data) == F){
+    stop(paste0("Données indisponibles pour ",selectedYear," (Indicateur SOC)"))
+  }
+
   # build nva fpt dataframe -------------------------- #
 
   nva_fpt_data = as.data.frame(cbind(branches_aggregates$BRANCH, branches_aggregates$NVA))
@@ -67,6 +71,10 @@ build_divisions_nva_fpt_soc = function(selectedYear)
     stop(paste0("Données indisponibles pour ",selectedYear))
   })
 
+  if("NVA_FPT" %in% names(ess_data) == F){
+    stop(paste0("Données indisponibles pour ",selectedYear," (Indicateur SOC)"))
+  }
+
   # build nva fpt dataframe -------------------------- #
 
   nva_fpt_data = data.frame(DIVISION = as.character(divisions_aggregates$CNA_ACTIVITE), NVA = as.numeric(divisions_aggregates$NVA))
@@ -77,9 +85,9 @@ build_divisions_nva_fpt_soc = function(selectedYear)
   {
     # build values
     line_ess = which(ess_data$BRANCH == mapping$BRANCH[mapping$DIVISION==nva_fpt_data$DIVISION[i]])
-    nva_fpt_data$GROSS_IMPACT[i] = ess_data$NVA_FPT[line_ess] * divisions_aggregates$NVA[i]
+    nva_fpt_data$GROSS_IMPACT[i] = ess_data$NVA_FPT[line_ess] * 100 * divisions_aggregates$NVA[i]
     nva_fpt_data$UNIT_GROSS_IMPACT[i] = "CPMEUR"
-    nva_fpt_data$FOOTPRINT[i] = ess_data$NVA_FPT[line_ess]
+    nva_fpt_data$FOOTPRINT[i] = ess_data$NVA_FPT[line_ess] * 100
     nva_fpt_data$UNIT_FOOTPRINT[i] = ess_data$UNIT_FOOTPRINT[line_ess]
   }
 

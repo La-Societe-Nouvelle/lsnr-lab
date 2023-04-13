@@ -81,6 +81,7 @@ build_divisions_fpt = function(indicator,year,verbose=T)
   output_2$YEAR = year
   output_2$UNIT = indic_metadata$UNIT[indic_metadata$CODE==toupper(indicator)]
   output_2$INDIC = toupper(indicator)
+  output_2$VALUE = replace_na(output_2$VALUE,0)
 
 
 

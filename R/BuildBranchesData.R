@@ -140,7 +140,7 @@ build_branches_fpt = function(indicator, year, verbose = T)
     fpt_branches$IC_FPT = next_ic_fpt
 
     # CFC
-    next_cfc_fpt = update_cfc_fpt(fpt_products,ic_matrix)
+    next_cfc_fpt = update_cfc_fpt(fpt_products,cfc_matrix)
     fpt_branches$CFC_FPT = next_cfc_fpt
 
     # PRD
@@ -195,7 +195,7 @@ build_branches_fpt = function(indicator, year, verbose = T)
     fpt_branches$IC_FPT = next_ic_fpt
 
     # CFC
-    next_cfc_fpt = update_cfc_fpt(fpt_products,ic_matrix)
+    next_cfc_fpt = update_cfc_fpt(fpt_products,cfc_matrix)
     fpt_branches$CFC_FPT = next_cfc_fpt
 
     # PRD

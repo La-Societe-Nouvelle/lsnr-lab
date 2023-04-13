@@ -1,3 +1,5 @@
+#' @importFrom stringr str_locate
+
 
 get_eurostat_data = function(endpoint)
 {
@@ -36,3 +38,4 @@ get_eurostat_data = function(endpoint)
 
   return(data)
 }
+

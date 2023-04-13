@@ -24,7 +24,7 @@ build_discounted_divisions_fpt=function(indicator,startYear,endYear = as.numeric
 {
   original_data = build_divisions_fpt(indicator,startYear,verbose = verbose)
 
-  if(str_detect(unique(original_data$UNIT),"EUR"))
+  if(str_detect(unique(original_data$UNIT),"EUR") & startYear != endYear)
 
   {
 

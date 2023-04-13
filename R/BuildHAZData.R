@@ -34,6 +34,10 @@ build_branches_nva_fpt_haz = function(selectedYear)
       rbind(data_expqnt) %>%
       filter(year == selectedYear) # control if empty
 
+    if(nrow(prodcom_data) == 0){
+      stop("Les données PRODCOM ne sont pas disponibles")
+    }
+
     # tei data (reuse insee data set -> coef tech not usable)
     reversed_ic_matrix = suppressMessages(get_reversed_ic_matrix(selectedYear)) %>%
       filter(PRODUCT == "CE") %>%

@@ -4,10 +4,14 @@
 #' @importFrom dplyr mutate
 #' @importFrom dplyr arrange
 #' @importFrom dplyr filter
+#' @importFrom dplyr rename
 #' @importFrom insee get_insee_dataset
 #' @importFrom tidyr pivot_wider
+#' @importFrom tidyr replace_na
 #' @importFrom stringr str_remove
 #' @importFrom tibble add_column
+#' @importFrom tibble rownames_to_column
+#' @importFrom lsnstat lsnrstat
 #'
 #' @noRd
 
@@ -43,6 +47,7 @@
 
 get_products_aggregates = function(year)
 {
+  insee:::read_dataset_metadata("CNA-2014-ERE")
 
   # fetch data
   filters =  c("A..VAL.P1..VALEUR_ABSOLUE.FE.EUROS_COURANTS.BRUT",
@@ -62,7 +67,16 @@ get_products_aggregates = function(year)
 
   if(any(lapply(datalist,nrow) == 0))
   {
+    if(year <= 2030 & year > 2020)
+    {
+      products_aggregates = get_forecasted_data(year,"product")
+
+      return(products_aggregates)
+    }else
+    {
     stop(paste0("Données économiques des produits indisponibles pour l'année ", year))
+    }
+
   }
 
   insee_ere_data = do.call(rbind,datalist)
@@ -87,6 +101,7 @@ get_products_aggregates = function(year)
   names(products_aggregates)[names(products_aggregates) == 'CNA_PRODUIT'] = 'PRODUCT'
 
   return(products_aggregates)
+
 }
 
 #########################################################################################################################
@@ -104,7 +119,16 @@ get_branches_aggregates = function(year)
 
   if(nrow(insee_cpeb_data) == 0)
   {
+    if(year <= 2030 & year > 2020)
+    {
+
+      branches_aggregates = get_forecasted_data(year,"branch")
+
+      return(branches_aggregates)
+    }else
+    {
     stop(paste0("Comptes de production et d'exploitation des branches indisponibles pour l'année ", year))
+    }
   }
 
   cpeb_data = insee_cpeb_data %>%
@@ -162,20 +186,30 @@ get_divisions_aggregates = function(year)
 {
 
   # fetch data (CPEB)
-  insee_cpeb_data = get_insee_dataset(
+  insee_cpeb_data = try(get_insee_dataset(
     "CNA-2014-CPEB",
     startPeriod = year,
     endPeriod = year,
     filter = "A...VAL.....BRUT"
-  )
+  ) %>%
+    filter(substr(CNA_ACTIVITE,1,3)=="A88"),silent = T)
 
-  if(nrow(insee_cpeb_data) == 0)
+  if(nrow(insee_cpeb_data) == 0 || class(insee_cpeb_data) == "try-error")
   {
+
+    if(year <= 2030 & year > 2020)
+    {
+
+      cpeb_data = get_forecasted_data(year,"division")
+
+      return(cpeb_data)
+    }else{
+
     stop(paste0("Comptes de production et d'exploitation des divisions indisponibles pour l'année ", year))
+    }
   }
 
-  cpeb_data = insee_cpeb_data %>%
-    filter(substr(CNA_ACTIVITE,1,3)=="A88") %>%
+  cpeb_data = insee_cpeb_data  %>%
     filter(OPERATION %in% c('P1','P2','B1G')) %>%
     select(CNA_ACTIVITE, OPERATION, OBS_VALUE) %>%
     pivot_wider(names_from = OPERATION, values_from = OBS_VALUE) %>%
@@ -224,6 +258,15 @@ get_ic_matrix = function(year)
 
   if(nrow(insee_tei_data) == 0)
   {
+
+    if(year <= 2030 & year > 2020)
+    {
+
+      ic_matrix = get_forecasted_data(year,"ic")
+
+      return(ic_matrix)
+    }
+
     stop(paste0("Tableau des entrées intermédiaires indisponible pour l'année ", year))
   }
 
@@ -270,6 +313,14 @@ get_reversed_ic_matrix = function(year)
 
   if(nrow(insee_tei_data) == 0)
   {
+    if(year <= 2030 & year > 2020)
+    {
+
+      ic_matrix = get_forecasted_data(year,"ric")
+
+      return(ic_matrix)
+    }
+
     stop(paste0("Tableau des entrées intermédiaires indisponible pour l'année ", year))
   }
 
@@ -315,6 +366,11 @@ get_cfc_matrix = function (year)
 
   if(nrow(insee_ccf_data) == 0)
   {
+    if(year <= 2030 & year > 2020)
+    {
+      cfc_matrix = get_forecasted_data(year,"cfc")
+      return(cfc_matrix)
+    }
     stop(paste0("Données des consommations de capital fixe des branches indisponibles pour l'année ", year))
   }
 
@@ -460,7 +516,7 @@ get_cfc_matrix = function (year)
 
 get_transfers_matrix = function(year)
 {
-  dom = list(lsnr:::tess_2010_dom,
+  dom = try(list(lsnr:::tess_2010_dom,
        lsnr:::tess_2011_dom,
        lsnr:::tess_2012_dom,
        lsnr:::tess_2013_dom,
@@ -469,10 +525,18 @@ get_transfers_matrix = function(year)
        lsnr:::tess_2017_dom,
        lsnr:::tess_2018_dom,
        lsnr:::tess_2019_dom
-       )[[which(c(2010:2013,2015:2019) == year)]]
+       )[[which(c(2010:2013,2015:2019) == year)]],silent=T)
 
   if(class(dom) == "try-error")
   {
+    if(year <= 2030 & year >= 2000)
+    {
+
+      tr_matrix = get_forecasted_data(year, "tr")
+
+      return(tr_matrix)
+    }
+
     stop(paste0("Tableau entrées-sorties symétrique domestique indisponible pour l'année ", year))
   }
 
@@ -485,7 +549,109 @@ get_transfers_matrix = function(year)
 
   tr_matrix = as.data.frame(lapply(tr_matrix, as.numeric))
 
+  tr_matrix[is.na(tr_matrix)] = 0
+
   tr_matrix = (tr_matrix / rowSums(tr_matrix)) %>% add_column(PRODUCT = branches$CODE,.before = "AZ")
 
   return(tr_matrix)
+}
+
+######################################################################################################################
+################################################## FORECASTED DATA ##################################################
+
+get_forecasted_data = function(year,type){
+  y = year
+if(type == "tr"){
+
+  forecasted_tr = lsnrstat(table = "structural",type = "tess",year = y)
+
+  tr_matrix = forecasted_tr %>% filter(year == y) %>% rename(branch = activity) %>% select('branch','product','value') %>% pivot_wider(names_from = branch, values_from = "value") %>% rename(PRODUCT = product)
+
+  for(i in 2:ncol(tr_matrix)){
+    tr_matrix[,i] = tr_matrix[,i] / sum(tr_matrix[,i],na.rm = T)
+  }
+
+  data = tr_matrix
+}
+if(type == "ic"){
+
+  forecasted_tei = lsnrstat(table = "structural",type = "tei",year = y)
+
+  ic_matrix = forecasted_tei %>% filter(year == y) %>% select(!c("lastupdate","flag","year","unit","lastupload","classification")) %>% rename(branch = activity) %>% arrange(branch,product) %>% pivot_wider(names_from = "branch",values_from = "value") %>% rename(PRODUCT = product)
+
+  for(x in 2:ncol(ic_matrix)){
+    ic_matrix[,x] = ic_matrix[,x] / sum(ic_matrix[,x])
+    ic_matrix[,x] = replace_na(ic_matrix[,x],list(0))
+
+    ic_matrix[is.nan(unlist(ic_matrix[,x])),x] = 0
+  }
+  data = ic_matrix
+}
+
+  if(type == "ric"){
+
+    forecasted_tei = lsnrstat(table = "structural",type = "tei",year = y)
+
+    ic_matrix = forecasted_tei %>% filter(year == y) %>% select(!c("lastupdate","flag","year","unit","lastupload","classification")) %>% rename(branch = activity) %>% arrange(branch,product) %>% pivot_wider(names_from = "branch",values_from = "value") %>% rename(PRODUCT = product)
+
+    for(x in 1:nrow(ic_matrix)){
+      ic_matrix[x,-1] = ic_matrix[x,-1] / sum(ic_matrix[x,-1])
+      ic_matrix[x,-1] = replace_na(ic_matrix[x,-1],list(0))
+
+      ic_matrix[x,c(F,is.nan(unlist(ic_matrix[x,-1])))] = 0
+    }
+    data = ic_matrix
+  }
+if(type == "cfc"){
+  list_branch = lsnr:::Branches$CODE
+
+  cfc = lsnrstat(table = "structural",type = "pat_nf",year = y, classification = "a38")
+
+  cfc_matrix = setNames(matrix(0,nrow = 37,ncol = 37)%>%
+                          `rownames<-`(list_branch) %>%
+                          as.data.frame(),list_branch)
+
+  for(i in 1:ncol(cfc_matrix)){
+    product_list = cfc$product[cfc$activity == names(cfc_matrix)[i]]
+    for(j in 1:nrow(cfc_matrix)){
+      val = cfc$value[cfc$activity == names(cfc_matrix)[i] & cfc$product == row.names(cfc_matrix)[j]]
+      if(length(val)>0){
+        cfc_matrix[j,i] = val}
+    }
+  }
+
+  data = cfc_matrix %>% rownames_to_column(var = "BRANCH")
+
+}
+if(type == "branch"){
+
+  forecasted_branch = lsnrstat(table = "structural",type = "cpeb",classification = "a38",year = y)
+
+  data = forecasted_branch %>% filter(activity != "TOTAL" & aggregate != "B1G") %>% select(value,activity,aggregate) %>%
+    pivot_wider(names_from = aggregate,values_from = value) %>% rename(BRANCH = activity, NVA = B1N, PRD = P1, IC = P2) %>% arrange(BRANCH)
+
+}
+if(type == "division"){
+  forecasted_div = lsnrstat(table = "structural",type = "cpeb",classification = "a88",year = y)
+
+  data = forecasted_div %>% select(value,activity,aggregate) %>%
+    pivot_wider(names_from = aggregate,values_from = value) %>% rename(NVA = B1N, PRD = P1, IC = P2,GVA = B1G, CNA_ACTIVITE = activity) %>% arrange(CNA_ACTIVITE)
+}
+if(type == "product"){
+
+  forecasted_products = lsnrstat(table = "structural",type = "ere",classification = "a38",year = y)
+
+  data = forecasted_products %>%
+    filter(aggregate %in% c("P1","P7") & product != "TOTAL") %>%
+    mutate(value = replace_na(as.numeric(value,0))) %>%
+    select(product,aggregate,value) %>%
+    arrange(product) %>%
+    pivot_wider(names_from = aggregate,values_from = value) %>%
+    rename(IMP = P7, RESS = P1, PRODUCT = product) %>%
+    mutate(IMP = replace_na(IMP,0)) %>%
+    mutate(TRESS = IMP + RESS)
+}
+
+
+return(data)
 }

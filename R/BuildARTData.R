@@ -31,6 +31,10 @@ build_branches_nva_fpt_art = function(selectedYear)
     stop(paste0("Données indisponibles pour ",selectedYear))
   })
 
+  if(nrow(dge_data) == 0){
+    stop(paste0("Données indisponibles pour ",selectedYear," (Indicateur ART)"))
+  }
+
   # sector fpt --------------------------------------- #
 
   all_sector_fpt = round((dge_data$value / sum(as.numeric(branches_aggregates$NVA + branches_aggregates$CFC))), digits = 3)
@@ -71,6 +75,10 @@ build_divisions_nva_fpt_art = function(selectedYear)
   }, error = function(e) {
     stop(paste0("Données indisponibles pour ",selectedYear))
   })
+
+  if(nrow(dge_data) == 0){
+    stop(paste0("Données indisponibles pour ",selectedYear," (Indicateur ART)"))
+  }
 
   # sector fpt --------------------------------------- #
 
