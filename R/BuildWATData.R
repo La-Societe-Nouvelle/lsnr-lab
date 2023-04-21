@@ -1,7 +1,7 @@
 #'Build and returns all data required to the WAT indicator computations.
 #'
 #'Returns a `list` made up of value added impacts by French branches, imported products associated coefficient,
-#'Data sources and values unit. This data will be used in both BuildBranchesData and BuildDivisionsData functions.
+#'Data sources and values unit. This data will be used in both <BuildBranchesData> and <BuildDivisionsData> functions.
 #'
 #' @param Year Considered year.
 #'
@@ -23,7 +23,7 @@
 #   AGR       Agriculture
 #   MIN       Industrie extractive
 #   IND       Industrie
-#   ELC       Production d'électricité
+#   ELC       Production d'electricite
 #   CON       Construction
 #   SER       Services
 

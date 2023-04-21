@@ -1,6 +1,7 @@
-#' Compute dicounted macroeconomic values of societal footprints by NACE branches (38).
+#' Compute dicounted macroeconomic values of societal footprints by 'NACE' branches (38).
 #'
-#' @details This function calls the latest available footprints for branches and discount it in specified-year euro terms.
+#' @details This function calls the latest available footprints for branches
+#'  and discount them in specified-year euro terms.
 #'
 #' @importFrom insee get_insee_idbank
 #' @importFrom stringr str_remove
@@ -16,7 +17,7 @@
 #'
 #' @examples
 #'
-#' build_branches_fpt("GHG",2019,2022)
+#' build_discounted_branches_fpt("GHG",2019,2022)
 #'
 #' @export
 

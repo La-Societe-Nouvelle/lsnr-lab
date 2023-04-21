@@ -1,8 +1,10 @@
-#' Compute macroeconomic values of societal footprints by NACE branches (38)
+#' Compute macroeconomic values of societal footprints by 'NACE' branches (38)
 #'
-#' @details This function aims to compute French branch societal footprints by non-financial dimension by year.
-#' It involves, on one hand, a macroeconomic input-output modelization of the French economy and its interactions with
-#' the rest of the world, based on INSEE IOTs, and requires, on the other hand, direct impact data from institutional sources.
+#' @details This function aims to compute French branch societal footprints by
+#'  non-financial dimension by year.It involves, on one hand, a macroeconomic
+#'  input-output modelization of the French economy and its interactions with
+#'  the rest of the world, based on 'INSEE' Input-output tables, and requires,
+#'  on the other hand, direct impact data from institutional sources.
 #'
 #' @importFrom tidyr pivot_longer
 #' @importFrom stringr str_remove
@@ -91,8 +93,8 @@ build_branches_fpt = function(indicator, year, verbose = T)
     fpt_branches$PRD_FPT[i] = as.numeric(nva_fpt$FOOTPRINT[nva_fpt$BRANCH==fpt_branches$BRANCH[i]])
   }
 
-  #La variation des stocks (P52) correspond à la valeur des entrées en stock diminuée de la valeur des sorties de stocks et des pertes courantes sur stocks.
-  #Les stocks comprennent les matières premières et fournitures, les travaux en cours, les biens finis et les biens destinés à la revente.
+  #La variation des stocks (P52) correspond à la valeur des entrees en stock diminuee de la valeur des sorties de stocks et des pertes courantes sur stocks.
+  #Les stocks comprennent les matières premières et fournitures, les travaux en cours, les biens finis et les biens destines à la revente.
 
   #Product values deduction, taking inter-branch transfers into account.
 

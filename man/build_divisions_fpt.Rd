@@ -2,7 +2,7 @@
 % Please edit documentation in R/BuildDivisionsData.R
 \name{build_divisions_fpt}
 \alias{build_divisions_fpt}
-\title{Compute macroeconomic values of societal footprints by NACE divisions (88)}
+\title{Compute macroeconomic values of societal footprints by 'NACE' divisions (88)}
 \usage{
 build_divisions_fpt(indicator, year, verbose = T)
 }
@@ -17,14 +17,16 @@ build_divisions_fpt(indicator, year, verbose = T)
 A table of macroeconomic footprint values by economic activities division.
 }
 \description{
-Compute macroeconomic values of societal footprints by NACE divisions (88)
+Compute macroeconomic values of societal footprints by 'NACE' divisions (88)
 }
 \details{
-This function aims to compute French branch societal footprints by non-financial dimension by year.
-It involves, on one hand, a macroeconomic input-output modelization of the French economy and its interactions with
-the rest of the world, based on INSEE IOTs, and requires, on the other hand, direct impact data from institutional sources.
-Specifically BuildDivisionsData compute division footprints by adjusting branch footprints thanks to
-division economic aggregate values.
+This function aims to compute French branch societal footprints by
+ non-financial dimension by year.It involves, on one hand, a macroeconomic
+ input-output modelization of the French economy and its interactions with
+ the rest of the world, based on 'INSEE' Input-output tables, and requires,
+ on the other hand, direct impact data from institutional sources. Specifically,
+ this function computes division footprints by adjusting branch footprints
+ thanks to division economic aggregate values.
 }
 \examples{
 build_divisions_fpt("ART",2015)

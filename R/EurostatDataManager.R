@@ -12,7 +12,7 @@ get_eurostat_data = function(endpoint)
     selectedYear = substr(endpoint,str_locate(endpoint,"&time=")[1,2]+1,str_locate(endpoint,"&time=")[1,2]+4)
     requestedTable = substr(endpoint,str_locate(endpoint,"1.0/data/")[1,2]+1,str_locate(endpoint,"\\?")[1,1]-1)
 
-    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table ", requestedTable, ")"))
+    stop(paste0("Donnees eurostat indisponibles pour ",selectedYear," (table ", requestedTable, ")"))
   }
 
   data = data.frame(matrix(nrow = length(content$value), ncol = (length(content$id))))

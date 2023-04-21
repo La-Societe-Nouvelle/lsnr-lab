@@ -2,7 +2,7 @@
 % Please edit documentation in R/BuildBranchesData.R
 \name{build_branches_fpt}
 \alias{build_branches_fpt}
-\title{Compute macroeconomic values of societal footprints by NACE branches (38)}
+\title{Compute macroeconomic values of societal footprints by 'NACE' branches (38)}
 \usage{
 build_branches_fpt(indicator, year, verbose = T)
 }
@@ -17,12 +17,14 @@ build_branches_fpt(indicator, year, verbose = T)
 A table of macroeconomic footprint values by economic activities branch.
 }
 \description{
-Compute macroeconomic values of societal footprints by NACE branches (38)
+Compute macroeconomic values of societal footprints by 'NACE' branches (38)
 }
 \details{
-This function aims to compute French branch societal footprints by non-financial dimension by year.
-It involves, on one hand, a macroeconomic input-output modelization of the French economy and its interactions with
-the rest of the world, based on INSEE IOTs, and requires, on the other hand, direct impact data from institutional sources.
+This function aims to compute French branch societal footprints by
+ non-financial dimension by year.It involves, on one hand, a macroeconomic
+ input-output modelization of the French economy and its interactions with
+ the rest of the world, based on 'INSEE' Input-output tables, and requires,
+ on the other hand, direct impact data from institutional sources.
 }
 \examples{
 build_branches_fpt("ART",2015)

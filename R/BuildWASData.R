@@ -1,7 +1,7 @@
 #'Build and returns all data required to the WAS indicator computations.
 #'
 #'Returns a `list` made up of value added impacts by French branches, imported products associated coefficient,
-#'Data sources and values unit. This data will be used in both BuildBranchesData and BuildDivisionsData functions.
+#'Data sources and values unit. This data will be used in both <BuildBranchesData> and <BuildDivisionsData> functions.
 #'
 #' @param Year Considered year.
 #'
@@ -33,7 +33,7 @@ build_branches_nva_fpt_was = function(selectedYear)
   tryCatch({
     eurostat_data = get_eurostat("env_wasgen")
   }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table env_wasgen)"))
+    stop(paste0("Donnees eurostat indisponibles pour ",selectedYear," (table env_wasgen)"))
   })
 
   wasgen_data = eurostat_data %>%
@@ -105,7 +105,7 @@ build_divisions_nva_fpt_was = function(selectedYear)
   tryCatch({
     eurostat_data = get_eurostat("env_wasgen")
   }, error = function(e) {
-    stop(paste0("Données eurostat indisponibles pour ",selectedYear," (table env_wasgen)"))
+    stop(paste0("Donnees eurostat indisponibles pour ",selectedYear," (table env_wasgen)"))
   })
 
   wasgen_data = eurostat_data %>%

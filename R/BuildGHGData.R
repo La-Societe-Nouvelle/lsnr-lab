@@ -116,9 +116,9 @@ build_divisions_nva_fpt_ghg = function(selectedYear)
 
   ac_ainah_data = try(get_eurostat_data(paste0(main,filters,nace)),silent = T)
 
-  if(class(ac_ainah_data) == "try-error" & selectedYear <= 2030 & selectedYear > 2020)
+  if(inherits(ac_ainah_data,"try-error") & selectedYear <= 2030 & selectedYear > 2020)
   {
-    nva_fpt_data = read.csv("C:/Users/Joris/OneDrive - La Société Nouvelle/Documents/Travaux statistiques/Travaux appliqués/Structure de l'économie française/Comptes extrafinanciers/GHG_D.csv",
+    nva_fpt_data = read.csv("C:/Users/Joris/OneDrive - La Societe Nouvelle/Documents/Travaux statistiques/Travaux appliques/Structure de l'economie française/Comptes extrafinanciers/GHG_D.csv",
                             sep = ";",encoding = 'latin1',colClasses = "character") %>%
       mutate(FOOTPRINT = as.numeric(FOOTPRINT), NVA = as.numeric(NVA), GROSS_IMPACT = as.numeric(GROSS_IMPACT)) %>%
       filter(year == selectedYear) %>%

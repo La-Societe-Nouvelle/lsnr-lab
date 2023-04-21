@@ -2,7 +2,7 @@
 % Please edit documentation in R/BuildDiscountedBranchesData.R
 \name{build_discounted_branches_fpt}
 \alias{build_discounted_branches_fpt}
-\title{Compute dicounted macroeconomic values of societal footprints by NACE branches (38).}
+\title{Compute dicounted macroeconomic values of societal footprints by 'NACE' branches (38).}
 \usage{
 build_discounted_branches_fpt(
   indicator,
@@ -24,14 +24,15 @@ build_discounted_branches_fpt(
 A table of macroeconomic footprint values by economic activities branch.
 }
 \description{
-Compute dicounted macroeconomic values of societal footprints by NACE branches (38).
+Compute dicounted macroeconomic values of societal footprints by 'NACE' branches (38).
 }
 \details{
-This function calls the latest available footprints for branches and discount it in specified-year euro terms.
+This function calls the latest available footprints for branches
+ and discount them in specified-year euro terms.
 }
 \examples{
 
-build_branches_fpt("GHG",2019,2022)
+build_discounted_branches_fpt("GHG",2019,2022)
 
 }
 \seealso{

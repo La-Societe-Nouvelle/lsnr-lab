@@ -6,7 +6,7 @@
 \alias{lsnr-package}
 \title{lsnr: Societal footprint by economic activities}
 \description{
-This package provides a set of R functions designed to compute French economic activities societal footprints. More precisely, they allow the user to roughly modelize French economic activity and its interactions and to compute related societal footprints by 38 NACE branches and 88 NACE divisions. It offers a 12 non-financial dimensions framework. Detailed documentation and metholodology are availables online \url{https://docs.lasocietenouvelle.org/}. This package is designed by La 'Societe Nouvelle', a French organization that set up a non financial national information system.
+A set of functions designed to compute French economic activities societal footprints. More precisely, they allow the user to roughly modelize French economic activity and its interactions and to compute related societal footprints by 38 NACE branches and 88 NACE divisions. It offers a 12 non-financial dimensions framework. Detailed documentation and metholodology are availables online \url{https://docs.lasocietenouvelle.org/}. This package is designed by La 'Societe Nouvelle', a French organization that set up a non financial national information system.
 }
 \seealso{
 Useful links:
@@ -19,7 +19,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Joris BLAIN \email{joris.blain@lasocietenouvelle.org}
+\strong{Maintainer}: Joris Blain \email{joris.blain@lasocietenouvelle.org}
 
 }
 \keyword{internal}

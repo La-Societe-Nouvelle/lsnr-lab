@@ -1,10 +1,12 @@
-#' Compute macroeconomic values of societal footprints by NACE divisions (88)
+#' Compute macroeconomic values of societal footprints by 'NACE' divisions (88)
 #'
-#' @details This function aims to compute French branch societal footprints by non-financial dimension by year.
-#' It involves, on one hand, a macroeconomic input-output modelization of the French economy and its interactions with
-#' the rest of the world, based on INSEE IOTs, and requires, on the other hand, direct impact data from institutional sources.
-#' Specifically BuildDivisionsData compute division footprints by adjusting branch footprints thanks to
-#' division economic aggregate values.
+#' @details This function aims to compute French branch societal footprints by
+#'  non-financial dimension by year.It involves, on one hand, a macroeconomic
+#'  input-output modelization of the French economy and its interactions with
+#'  the rest of the world, based on 'INSEE' Input-output tables, and requires,
+#'  on the other hand, direct impact data from institutional sources. Specifically,
+#'  this function computes division footprints by adjusting branch footprints
+#'  thanks to division economic aggregate values.
 #'
 #' @param year year of requested data.
 #' @param indicator requested non-financial dimension.

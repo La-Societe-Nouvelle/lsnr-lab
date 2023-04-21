@@ -5,12 +5,12 @@
 #'
 #' @noRd
 
-# Données exploitées
-#   - Valeur ajoutée brute de l'Artisanat (données issues de la DGE - Chiffres clefs)
+# Donnees exploitees
+#   - Valeur ajoutee brute de l'Artisanat (donnees issues de la DGE - Chiffres clefs)
 #
 # /!\ l'empreinte est identique pour l'ensemble des branches
 #
-# Les immportations sont considérées comme nullement contributrices aux métiers d'art et aux savoir-faire (i.e. coef = 0)
+# Les importations sont considereees comme nullement contributrices aux metiers d'art et aux savoir-faire (i.e. coef = 0)
 
 build_branches_nva_fpt_art = function(selectedYear)
 {
@@ -28,17 +28,17 @@ build_branches_nva_fpt_art = function(selectedYear)
       filter(year == selectedYear)
 
   }, error = function(e) {
-    stop(paste0("Données indisponibles pour ",selectedYear))
+    stop(paste0("Donnees indisponibles pour ",selectedYear))
   })
 
   if(nrow(dge_data) == 0){
-    stop(paste0("Données indisponibles pour ",selectedYear," (Indicateur ART)"))
+    stop(paste0("Donnees indisponibles pour ",selectedYear," (Indicateur ART)"))
   }
 
   # sector fpt --------------------------------------- #
 
   all_sector_fpt = round((dge_data$value / sum(as.numeric(branches_aggregates$NVA + branches_aggregates$CFC))), digits = 3)
-  # NVA + CFC -> Valeur ajoutée brute disponible pour l'Artisanat
+  # NVA + CFC -> Valeur ajoutee brute disponible pour l'Artisanat
 
   # build nva fpt dataframe -------------------------- #
 
@@ -73,11 +73,11 @@ build_divisions_nva_fpt_art = function(selectedYear)
       filter(year == selectedYear)
 
   }, error = function(e) {
-    stop(paste0("Données indisponibles pour ",selectedYear))
+    stop(paste0("Donnees indisponibles pour ",selectedYear))
   })
 
   if(nrow(dge_data) == 0){
-    stop(paste0("Données indisponibles pour ",selectedYear," (Indicateur ART)"))
+    stop(paste0("Donnees indisponibles pour ",selectedYear," (Indicateur ART)"))
   }
 
   # sector fpt --------------------------------------- #

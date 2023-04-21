@@ -23,11 +23,11 @@ build_branches_nva_fpt_soc = function(selectedYear)
       ess_data$NVA_FPT[i] = ess_branch_data$value
     }
   }, error = function(e) {
-    stop(paste0("Données indisponibles pour ",selectedYear))
+    stop(paste0("Donnees indisponibles pour ",selectedYear))
   })
 
   if("NVA_FPT" %in% names(ess_data) == F){
-    stop(paste0("Données indisponibles pour ",selectedYear," (Indicateur SOC)"))
+    stop(paste0("Donnees indisponibles pour ",selectedYear," (Indicateur SOC)"))
   }
 
   # build nva fpt dataframe -------------------------- #
@@ -68,11 +68,11 @@ build_divisions_nva_fpt_soc = function(selectedYear)
       ess_data$NVA_FPT[i] = ess_branch_data$value
     }
   }, error = function(e) {
-    stop(paste0("Données indisponibles pour ",selectedYear))
+    stop(paste0("Donnees indisponibles pour ",selectedYear))
   })
 
   if("NVA_FPT" %in% names(ess_data) == F){
-    stop(paste0("Données indisponibles pour ",selectedYear," (Indicateur SOC)"))
+    stop(paste0("Donnees indisponibles pour ",selectedYear," (Indicateur SOC)"))
   }
 
   # build nva fpt dataframe -------------------------- #

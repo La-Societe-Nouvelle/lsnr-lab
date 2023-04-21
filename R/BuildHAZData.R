@@ -35,7 +35,7 @@ build_branches_nva_fpt_haz = function(selectedYear)
       filter(year == selectedYear) # control if empty
 
     if(nrow(prodcom_data) == 0){
-      stop("Les données PRODCOM ne sont pas disponibles")
+      stop("Les donnees PRODCOM ne sont pas disponibles")
     }
 
     # tei data (reuse insee data set -> coef tech not usable)
@@ -45,7 +45,7 @@ build_branches_nva_fpt_haz = function(selectedYear)
 
   }, error = function(e) {
     print(e)
-    stop(paste0("Données indisponibles pour ",selectedYear))
+    stop(paste0("Donnees indisponibles pour ",selectedYear))
   })
 
   haz_dmc_qnt = prodcom_data$value[prodcom_data$aggregate=="PRODQNT"] + prodcom_data$value[prodcom_data$aggregate=="IMPQNT"] - prodcom_data$value[prodcom_data$aggregate=="EXPQNT"]

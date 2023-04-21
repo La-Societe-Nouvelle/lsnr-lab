@@ -1,4 +1,5 @@
 #' @importFrom dplyr rename_all
+#' @importFrom lsnstat lsnstat_macrodata
 
 get_branches_nva_fpt = function(indic,year)
 {
@@ -19,14 +20,14 @@ get_branches_nva_fpt = function(indic,year)
     "wat" = try(build_branches_nva_fpt_wat(year),silent = T)
   )
 
-  if("try-error" %in% class(data) || nrow(data) != nrow(lsnr:::Branches))
+  if(inherits(data,"try-error") || nrow(data) != nrow(lsnr:::Branches))
   {
     if(year <= 2030 & year > 2010)
     {
     data = get_forecasted_fpt(indic,year,"B")
     return(data)
     }
-    stop(paste0("Données d'impacts des branches de l'indicateur ",toupper(indic)," indisponibles pour l'année ", year))
+    stop(paste0("Donnees d'impacts des branches de l'indicateur ",toupper(indic)," indisponibles pour l'annee ", year))
   }
 
   data = data %>% mutate(flag = "")
@@ -53,7 +54,7 @@ get_divisions_nva_fpt = function(indic,year)
                 "wat" = try(build_divisions_nva_fpt_wat(year),silent = T)
   )
 
-  if("try-error" %in% class(data) || nrow(data) != nrow(lsnr:::Divisions)-1)
+  if(inherits(data,"try-error") || nrow(data) != nrow(lsnr:::Divisions)-1)
   {
     if(year <= 2030 & year > 2010)
     {
@@ -61,7 +62,7 @@ get_divisions_nva_fpt = function(indic,year)
       return(data)
     }
 
-    stop(paste0("Données d'impacts des divisions de l'indicateur ",toupper(indic)," indisponibles pour l'année ", year))
+    stop(paste0("Donnees d'impacts des divisions de l'indicateur ",toupper(indic)," indisponibles pour l'annee ", year))
   }
 
   data = data %>% mutate(flag = "")
@@ -77,11 +78,11 @@ get_branches_imp_coef = function(indic,year)
   data = NA
   attempt = 0
 
-  while((all(is.na(data)) || class(data) == "try-error" || all(is.na(data))) & year >= 2000 & year <= 2030)
+  while((all(is.na(data)) || inherits(data,"try-error") || all(is.na(data))) & year >= 2000 & year <= 2030)
   {
 
     if(attempt > 0)
-      {print(paste0("Coefficient d'impacts des importations de l'indicateur ",toupper(indic)," indisponible pour l'année ", fyear,", tentative pour l'année ",fyear - 1))}
+      {print(paste0("Coefficient d'impacts des importations de l'indicateur ",toupper(indic)," indisponible pour l'annee ", fyear,", tentative pour l'annee ",fyear - 1))}
 
     way = ifelse(year - 2015 <= 0, +1, -1)
 
@@ -106,14 +107,14 @@ get_branches_imp_coef = function(indic,year)
 
   if(attempt == 20)
     {
-      stop(paste0("Coefficient d'impacts des importations de l'indicateur ",toupper(indic)," indisponible pour l'année ", year))
+      stop(paste0("Coefficient d'impacts des importations de l'indicateur ",toupper(indic)," indisponible pour l'annee ", year))
   }
 
 
   }
 
   if(attempt > 0){
-    print(paste0("Année retenue : ",fyear))
+    print(paste0("Annee retenue : ",fyear))
   }
 
   return(data)
@@ -205,6 +206,7 @@ get_impact_availability = function(indicator,Force = F)
 
 get_forecasted_fpt = function(indicator,year,nace_level = "B"){
   y = year
+  tab = ifelse(nace_level == "B","macro_fpt_trd_a38","macro_fpt_trd_a88")
   type = ifelse(nace_level == "B","branch","division")
   NVA = lsnr:::get_forecasted_data(year,type) %>% select(NVA) %>% filter(.[,1] %in% c("TOTAL","00") == F)
 
@@ -212,8 +214,7 @@ get_forecasted_fpt = function(indicator,year,nace_level = "B"){
     NVA = c(unlist(NVA),0)
   }
 
-  f_data = read.csv(paste0("C:/Users/Joris/OneDrive - La Société Nouvelle/Documents/Travaux statistiques/Travaux appliqués/Structure de l'économie française/Comptes extrafinanciers/",indicator,"_",nace_level,".csv"),
-           sep = ";",encoding = 'latin1',colClasses = "character") %>% filter(year == y & .[,1] %in% c("TOTAL","00") == F) %>%
+  f_data = lsnstat_macrodata(tab,filters = paste0("year=",y,"&indic=",toupper(indicator),"&aggregate=NVA")) %>% rename_with(tolower) %>% filter(.[,1] %in% c("TOTAL","00") == F) %>%
     mutate(FOOTPRINT = as.numeric(value), NVA = as.numeric(unlist(NVA))) %>%
     mutate(GROSS_IMPACT = FOOTPRINT * NVA,
            UNIT_FOOTPRINT = lsnr:::IndicatorsMetadata$UNIT[lsnr:::IndicatorsMetadata$CODE == toupper(indicator)],

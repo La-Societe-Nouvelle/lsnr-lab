@@ -5,13 +5,14 @@
 #' @importFrom dplyr arrange
 #' @importFrom dplyr filter
 #' @importFrom dplyr rename
+#' @importFrom dplyr rename_with
 #' @importFrom insee get_insee_dataset
 #' @importFrom tidyr pivot_wider
 #' @importFrom tidyr replace_na
 #' @importFrom stringr str_remove
 #' @importFrom tibble add_column
 #' @importFrom tibble rownames_to_column
-#' @importFrom lsnstat lsnrstat
+#' @importFrom lsnstat lsnstat_macrodata
 #'
 #' @noRd
 
@@ -194,7 +195,7 @@ get_divisions_aggregates = function(year)
   ) %>%
     filter(substr(CNA_ACTIVITE,1,3)=="A88"),silent = T)
 
-  if(nrow(insee_cpeb_data) == 0 || class(insee_cpeb_data) == "try-error")
+  if(nrow(insee_cpeb_data) == 0 || inherits(insee_cpeb_data,"try-error"))
   {
 
     if(year <= 2030 & year > 2020)
@@ -527,7 +528,7 @@ get_transfers_matrix = function(year)
        lsnr:::tess_2019_dom
        )[[which(c(2010:2013,2015:2019) == year)]],silent=T)
 
-  if(class(dom) == "try-error")
+  if(inherits(dom,"try-error"))
   {
     if(year <= 2030 & year >= 2000)
     {
@@ -563,7 +564,7 @@ get_forecasted_data = function(year,type){
   y = year
 if(type == "tr"){
 
-  forecasted_tr = lsnrstat(table = "structural",type = "tess",year = y)
+  forecasted_tr = lsnstat_macrodata("na_tess",filters = paste0("year=",y)) %>% rename_with(tolower)
 
   tr_matrix = forecasted_tr %>% filter(year == y) %>% rename(branch = activity) %>% select('branch','product','value') %>% pivot_wider(names_from = branch, values_from = "value") %>% rename(PRODUCT = product)
 
@@ -575,7 +576,7 @@ if(type == "tr"){
 }
 if(type == "ic"){
 
-  forecasted_tei = lsnrstat(table = "structural",type = "tei",year = y)
+  forecasted_tei = lsnstat_macrodata("na_tei",filters = paste0("year=",y)) %>% rename_with(tolower)
 
   ic_matrix = forecasted_tei %>% filter(year == y) %>% select(!c("lastupdate","flag","year","unit","lastupload","classification")) %>% rename(branch = activity) %>% arrange(branch,product) %>% pivot_wider(names_from = "branch",values_from = "value") %>% rename(PRODUCT = product)
 
@@ -590,7 +591,7 @@ if(type == "ic"){
 
   if(type == "ric"){
 
-    forecasted_tei = lsnrstat(table = "structural",type = "tei",year = y)
+    forecasted_tei = lsnstat_macrodata("na_tei",filters = paste0("year=",y)) %>% rename_with(tolower)
 
     ic_matrix = forecasted_tei %>% filter(year == y) %>% select(!c("lastupdate","flag","year","unit","lastupload","classification")) %>% rename(branch = activity) %>% arrange(branch,product) %>% pivot_wider(names_from = "branch",values_from = "value") %>% rename(PRODUCT = product)
 
@@ -605,7 +606,7 @@ if(type == "ic"){
 if(type == "cfc"){
   list_branch = lsnr:::Branches$CODE
 
-  cfc = lsnrstat(table = "structural",type = "pat_nf",year = y, classification = "a38")
+  cfc = lsnstat_macrodata("na_pat_nf",filters = paste0("classification=A38&year=",y)) %>% rename_with(tolower)
 
   cfc_matrix = setNames(matrix(0,nrow = 37,ncol = 37)%>%
                           `rownames<-`(list_branch) %>%
@@ -625,21 +626,21 @@ if(type == "cfc"){
 }
 if(type == "branch"){
 
-  forecasted_branch = lsnrstat(table = "structural",type = "cpeb",classification = "a38",year = y)
+  forecasted_branch = lsnstat_macrodata(dataset = "na_cpeb",filters = paste0("classification=A38&year=",y)) %>% rename_with(tolower)
 
   data = forecasted_branch %>% filter(activity != "TOTAL" & aggregate != "B1G") %>% select(value,activity,aggregate) %>%
     pivot_wider(names_from = aggregate,values_from = value) %>% rename(BRANCH = activity, NVA = B1N, PRD = P1, IC = P2) %>% arrange(BRANCH)
 
 }
 if(type == "division"){
-  forecasted_div = lsnrstat(table = "structural",type = "cpeb",classification = "a88",year = y)
+  forecasted_div = lsnstat_macrodata(dataset = "na_cpeb",filters = paste0("classification=A88&year=",y)) %>% rename_with(tolower)
 
   data = forecasted_div %>% select(value,activity,aggregate) %>%
     pivot_wider(names_from = aggregate,values_from = value) %>% rename(NVA = B1N, PRD = P1, IC = P2,GVA = B1G, CNA_ACTIVITE = activity) %>% arrange(CNA_ACTIVITE)
 }
 if(type == "product"){
 
-  forecasted_products = lsnrstat(table = "structural",type = "ere",classification = "a38",year = y)
+  forecasted_products = lsnstat_macrodata(dataset = "na_ere",filters = paste0("classification=A38&year=",y)) %>% rename_with(tolower)
 
   data = forecasted_products %>%
     filter(aggregate %in% c("P1","P7") & product != "TOTAL") %>%

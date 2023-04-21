@@ -10,7 +10,7 @@
 build_branches_nva_fpt_geq = function(selectedYear)
 {
   if(selectedYear %in% c(2016:2020) == F) {
-    stop("Les bases tous salariés de l'Insee ne sont disponibles que pour les années 2016 à 2020")
+    stop("Les bases tous salaries de l'Insee ne sont disponibles que pour les annees 2016 à 2020")
   }
 
   temp_folder = substr(tempdir(),1,unlist(str_locate_all(tempdir(),"\\\\"))[length(unlist(str_locate_all(tempdir(),"\\\\")))]-1)
@@ -34,7 +34,7 @@ build_branches_nva_fpt_geq = function(selectedYear)
     dir.create(tempdir(),showWarnings = F)
     tpd=tempdir()
 
-    print("Downloading : Insee 'Base tous salariés'...")
+    print("Downloading : Insee 'Base tous salaries'...")
 
     curl_download(links$link[links$year==selectedYear],paste0(tpd,"/sal.zip"),quiet=T)
     unzip(paste0(tpd,"/sal.zip"),exdir = paste0(tpd,"/unzipped_files/"))
@@ -52,9 +52,9 @@ build_branches_nva_fpt_geq = function(selectedYear)
 
     match_neto=matrix(c(0:23,unlist(neto_code)),24,2)
 
-    #NBHEUR_TOT: Nombre d'heures salariées total
-    #TRNNETO: Rémunération nette globale, en tranches
-    #A38: Activité (NAF rév2) en nomenclature agrégée (38 postes)
+    #NBHEUR_TOT: Nombre d'heures salariees total
+    #TRNNETO: Remuneration nette globale, en tranches
+    #A38: Activite (NAF rev2) en nomenclature agregee (38 postes)
 
     #Assign continuous previously defined bracket
     bts=as.data.frame(fread(fl) %>% select(A38,TRNNETO,NBHEUR_TOT,SEXE)  %>% mutate(NETO=0))
@@ -63,7 +63,7 @@ build_branches_nva_fpt_geq = function(selectedYear)
       bts$NETO[ls]=match_neto[match_neto[,1]==x,2]
     }
 
-    bts=bts %>% mutate(`Rémunérations horaires`=NETO/NBHEUR_TOT) %>% filter(`Rémunérations horaires`!="Inf")
+    bts=bts %>% mutate(`Remunerations horaires`=NETO/NBHEUR_TOT) %>% filter(`Remunerations horaires`!="Inf")
 
     branches_aggregates = get_branches_aggregates(selectedYear)
 
