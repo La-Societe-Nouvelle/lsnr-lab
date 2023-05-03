@@ -93,6 +93,10 @@ build_divisions_fpt = function(indicator,year,verbose=T)
     unlink(rec_fl) #Delete console ouput
   }
 
+  r = lsnr:::get_indicator_list() %>% as.data.frame %>% filter(`Indicator code` == toupper(indicator)) %>% select(`Used rounding`) %>% as.numeric()
+
+  output_2$VALUE = round(output_2$VALUE,r)
+
   return(output_2)
 }
 

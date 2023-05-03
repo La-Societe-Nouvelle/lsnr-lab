@@ -378,7 +378,7 @@ get_cfc_matrix = function (year)
   ccf_data = insee_ccf_data %>%
     filter(substr(CNA_ACTIVITE,1,3)=="A38") %>%
     mutate(CNA_ACTIVITE = str_remove(CNA_ACTIVITE,"A38-")) %>%
-    mutate(OPERATION = str_remove(OPERATION,"_SEC10")) %>%
+    mutate(OPERATION = str_remove(OPERATION,"_SEC10|SEC10")) %>%
     select(CNA_ACTIVITE, OPERATION, OBS_VALUE) %>%
     pivot_wider(names_from = OPERATION, values_from = OBS_VALUE) %>%
     arrange(CNA_ACTIVITE) %>%
@@ -402,71 +402,19 @@ get_cfc_matrix = function (year)
   enc_data = insee_enc_data %>%
     filter(substr(CNA_ACTIVITE,1,3)=="A38") %>%
     mutate(CNA_ACTIVITE = str_remove(CNA_ACTIVITE,"A38-")) %>%
-    mutate(OPERATION = str_remove(OPERATION,"_SEC10")) %>%
+    mutate(OPERATION = str_remove(OPERATION,"_SEC10|SEC10")) %>%
     select(CNA_ACTIVITE, OPERATION, OBS_VALUE) %>%
     pivot_wider(names_from = OPERATION, values_from = OBS_VALUE) %>%
     arrange(CNA_ACTIVITE) %>%
-    replace(is.na(.),0)
+    replace(is.na(.),0) %>%
+    mutate()
 
   # build cfc matrix
-  cfc_matrix = as.data.frame(ccf_data[,1])
-  for (j in 1:nrow(cfc_matrix))
-  {
-    product = cfc_matrix$CNA_ACTIVITE[j]
-    cfc_matrix[,product] = c(0)
-
-    for (i in 1:36)
-    {
-      # CH <- AN114
-      if (product=="CH") {
-        cfc_matrix[i,product] = ccf_data$AN114_SEC10[i] / ccf_data$AN11[i]
-        if (is.na(cfc_matrix[i,product])) cfc_matrix[i,product] = 0
-      }
-      # CI <- AN1132
-      if (product=="CI") {
-        total_enc = enc_data$AN1131_SEC10[i] + enc_data$AN1132_SEC10[i] + enc_data$AN1139_SEC10[i] + enc_data$AN111_SEC10[i] + enc_data$AN115_SEC10[i]
-        ccf_rest = ccf_data$AN11[i] - ccf_data$AN1121_SEC10[i] - ccf_data$AN1122_SEC10[i] - (ccf_data$AN1171_SEC10[i] + ccf_data$AN1173_SEC10[i] + ccf_data$AN1174_SEC10[i]) - ccf_data$AN114_SEC10[i]
-        cfc_matrix[i,product] = (enc_data$AN1132_SEC10[i] / total_enc) * ccf_rest / ccf_data$AN11[i]
-      }
-      # CK <- AN1139
-      if (product=="CK") {
-        total_enc = enc_data$AN1131_SEC10[i] + enc_data$AN1132_SEC10[i] + enc_data$AN1139_SEC10[i] + enc_data$AN111_SEC10[i] + enc_data$AN115_SEC10[i]
-        ccf_rest = ccf_data$AN11[i] - ccf_data$AN1121_SEC10[i] - ccf_data$AN1122_SEC10[i] - (ccf_data$AN1171_SEC10[i] + ccf_data$AN1173_SEC10[i] + ccf_data$AN1174_SEC10[i]) - ccf_data$AN114_SEC10[i]
-        cfc_matrix[i,product] = (enc_data$AN1139_SEC10[i] / total_enc) * ccf_rest / ccf_data$AN11[i]
-      }
-      # CL <- AN131
-      if (product=="CL") {
-        total_enc = enc_data$AN1131_SEC10[i] + enc_data$AN1132_SEC10[i] + enc_data$AN1139_SEC10[i] + enc_data$AN111_SEC10[i] + enc_data$AN115_SEC10[i]
-        ccf_rest = ccf_data$AN11[i] - ccf_data$AN1121_SEC10[i] - ccf_data$AN1122_SEC10[i] - (ccf_data$AN1171_SEC10[i] + ccf_data$AN1173_SEC10[i] + ccf_data$AN1174_SEC10[i]) - ccf_data$AN114_SEC10[i]
-        cfc_matrix[i,product] = (enc_data$AN1131_SEC10[i] / total_enc) * ccf_rest / ccf_data$AN11[i]
-      }
-      # FZ <- AN111, AN1121, AN1122
-      if (product=="FZ") {
-        total_enc = enc_data$AN1131_SEC10[i] + enc_data$AN1132_SEC10[i] + enc_data$AN1139_SEC10[i] + enc_data$AN111_SEC10[i] + enc_data$AN115_SEC10[i]
-        ccf_rest = ccf_data$AN11[i] - ccf_data$AN1121_SEC10[i] - ccf_data$AN1122_SEC10[i] - (ccf_data$AN1171_SEC10[i] + ccf_data$AN1173_SEC10[i] + ccf_data$AN1174_SEC10[i]) - ccf_data$AN114_SEC10[i]
-        cfc_matrix[i,product] = ccf_data$AN1121_SEC10[i] / ccf_data$AN11[i]
-                              + ccf_data$AN1122_SEC10[i] / ccf_data$AN11[i]
-                              + (enc_data$AN111_SEC10[i] / total_enc) * ccf_rest / ccf_data$AN11[i]
-      }
-      # MB <- AN1171
-      if (product=="MB") {
-        cfc_matrix[i,product] = ccf_data$AN1171_SEC10[i] / ccf_data$AN11[i]
-      }
-
-      # JC <- AN1173
-      if (product=="JC") {
-        cfc_matrix[i,product] = ccf_data$AN1173_SEC10[i] / ccf_data$AN11[i]
-      }
-
-      # RZ <- AN1174
-      if (product=="RZ") {
-        cfc_matrix[i,product] = ccf_data$AN1174_SEC10[i] / ccf_data$AN11[i]
-      }
-    }
+  cfc_matrix = data.frame(BRANCH = as.character(unlist(ccf_data[,1])))
 
   for (j in 1:nrow(cfc_matrix)) # column -> branch
   {
-    branch = cfc_matrix$CNA_ACTIVITE[j]
+    branch = cfc_matrix$BRANCH[j]
 
     cfc_matrix[,branch] = c(0)
 
@@ -488,25 +436,21 @@ get_cfc_matrix = function (year)
 
 
     # cfc coef by product (A38)
-    cfc_matrix[cfc_matrix$CNA_ACTIVITE=="AZ",branch] = cfc_branch_an115 / cfc_branch
-    cfc_matrix[cfc_matrix$CNA_ACTIVITE=="FZ",branch] = (cfc_branch_an111+cfc_branch_an112) / cfc_branch
-    cfc_matrix[cfc_matrix$CNA_ACTIVITE=="CH",branch] = cfc_branch_an114 / cfc_branch
-    cfc_matrix[cfc_matrix$CNA_ACTIVITE=="CI",branch] = cfc_branch_an1132 / cfc_branch
-    cfc_matrix[cfc_matrix$CNA_ACTIVITE=="CK",branch] = cfc_branch_an1139 / cfc_branch
-    cfc_matrix[cfc_matrix$CNA_ACTIVITE=="CL",branch] = cfc_branch_an1131 / cfc_branch
-    cfc_matrix[cfc_matrix$CNA_ACTIVITE=="MB",branch] = cfc_branch_an1171 / cfc_branch
-    cfc_matrix[cfc_matrix$CNA_ACTIVITE=="JC",branch] = cfc_branch_an1171 / cfc_branch
-    cfc_matrix[cfc_matrix$CNA_ACTIVITE=="RZ",branch] = cfc_branch_an1171 / cfc_branch
+    cfc_matrix[cfc_matrix$BRANCH=="AZ",branch] = cfc_branch_an115 / cfc_branch
+    cfc_matrix[cfc_matrix$BRANCH=="FZ",branch] = (cfc_branch_an111+cfc_branch_an112) / cfc_branch
+    cfc_matrix[cfc_matrix$BRANCH=="CH",branch] = cfc_branch_an114 / cfc_branch
+    cfc_matrix[cfc_matrix$BRANCH=="CI",branch] = cfc_branch_an1132 / cfc_branch
+    cfc_matrix[cfc_matrix$BRANCH=="CK",branch] = cfc_branch_an1139 / cfc_branch
+    cfc_matrix[cfc_matrix$BRANCH=="CL",branch] = cfc_branch_an1131 / cfc_branch
+    cfc_matrix[cfc_matrix$BRANCH=="MB",branch] = cfc_branch_an1171 / cfc_branch
+    cfc_matrix[cfc_matrix$BRANCH=="JC",branch] = cfc_branch_an1173 / cfc_branch
+    cfc_matrix[cfc_matrix$BRANCH=="RZ",branch] = cfc_branch_an1174 / cfc_branch
 
   }
-
   cfc_matrix$TZ = c(0)
   cfc_matrix = rbind(cfc_matrix,0)
-  cfc_matrix$CNA_ACTIVITE[37] = 'TZ'
-  names(cfc_matrix)[names(cfc_matrix) == 'CNA_ACTIVITE'] = 'BRANCH'
+  cfc_matrix$BRANCH[37] = 'TZ'
 
-  return(cfc_matrix)
-  }
   return(cfc_matrix)
 }
 
