@@ -6,6 +6,7 @@
 #' @importFrom dplyr filter
 #' @importFrom dplyr rename
 #' @importFrom dplyr rename_with
+#' @importFrom dplyr relocate
 #' @importFrom insee get_insee_dataset
 #' @importFrom tidyr pivot_wider
 #' @importFrom tidyr replace_na
@@ -51,22 +52,16 @@ get_products_aggregates = function(year)
   insee:::read_dataset_metadata("CNA-2014-ERE")
 
   # fetch data
-  filters =  c("A..VAL.P1..VALEUR_ABSOLUE.FE.EUROS_COURANTS.BRUT",
-                "A..VAL.P7..VALEUR_ABSOLUE.FE.EUROS_COURANTS.BRUT",
-                "A..VAL.P8..VALEUR_ABSOLUE.FE.EUROS_COURANTS.BRUT")
-  datalist =  vector("list", length = length(filters))
-  for (i in 1:length(filters))
-  {
-    insee_data = get_insee_dataset(
-      "CNA-2014-ERE",
-      startPeriod = year,
-      endPeriod = year,
-      filter = filters[i]
-    )
-    datalist[[i]] = insee_data
-  }
+  filter = "A..VAL.P1+P7+P8..VALEUR_ABSOLUE.FE.EUROS_COURANTS.BRUT"
 
-  if(any(lapply(datalist,nrow) == 0))
+  insee_ere_data = get_insee_dataset(
+    "CNA-2014-ERE",
+    startPeriod = year,
+    endPeriod = year,
+    filter = filter
+  )
+
+  if(nrow(insee_ere_data) == 0 | length(unique(insee_ere_data$OPERATION)) != 3)
   {
     if(year <= 2030 & year > 2020)
     {
@@ -79,8 +74,6 @@ get_products_aggregates = function(year)
     }
 
   }
-
-  insee_ere_data = do.call(rbind,datalist)
 
   # format dataframe
   ere_data = insee_ere_data %>%
@@ -120,7 +113,7 @@ get_branches_aggregates = function(year)
 
   if(nrow(insee_cpeb_data) == 0)
   {
-    if(year <= 2030 & year > 2020)
+    if(year <= 2030 & year > 2021)
     {
 
       branches_aggregates = get_forecasted_data(year,"branch")
@@ -150,7 +143,16 @@ get_branches_aggregates = function(year)
 
   if(nrow(insee_ccf_data) == 0)
   {
-    stop(paste0("Données des consommations de capital fixe des branches indisponibles pour l'année ", year))
+    if(year <= 2030 & year > 2021)
+    {
+
+      branches_aggregates = get_forecasted_data(year,"branch")
+
+      return(branches_aggregates)
+    }else
+    {
+      stop(paste0("Données des consommations de capital fixe des branches indisponibles pour l'année ", year))
+    }
   }
 
   ccf_data = insee_ccf_data %>%
@@ -163,6 +165,7 @@ get_branches_aggregates = function(year)
   # Build branches aggregates frame
   branches_aggregates = as.data.frame(cpeb_data$CNA_ACTIVITE)
   names(branches_aggregates)=c("BRANCH")
+
   for (i in 1:nrow(branches_aggregates))
   {
     branch = branches_aggregates$BRANCH[i]
@@ -257,7 +260,10 @@ get_ic_matrix = function(year)
     endPeriod = year
   )
 
-  if(nrow(insee_tei_data) == 0)
+  partial_ic_indicator = all(grepl("NNTOTAL",paste0(insee_tei_data$CNA_ACTIVITE,insee_tei_data$CNA_PRODUIT)))  #If NNTOTAL is detected at each row, it means this is a partial data publication
+
+
+  if(nrow(insee_tei_data) == 0 | partial_ic_indicator)
   {
 
     if(year <= 2030 & year > 2020)
@@ -278,26 +284,29 @@ get_ic_matrix = function(year)
     mutate(CNA_ACTIVITE = str_remove(CNA_ACTIVITE,"A38-")) %>%
     mutate(CNA_PRODUIT = str_remove(CNA_PRODUIT,"A38-")) %>%
     pivot_wider(names_from = CNA_ACTIVITE, values_from = OBS_VALUE) %>%
-    arrange(CNA_PRODUIT)
+    arrange(CNA_PRODUIT) %>%
+    relocate(any_of(c("CNA_PRODUIT",lsnr:::Branches$CODE)))
 
   # build ic matrix
-  ic_matrix = as.data.frame(tei_data[,1])
+  ic_matrix = data.frame(BRANCH = lsnr:::Branches$CODE)
+
+  match_vector = match(tei_data$CNA_PRODUIT,ic_matrix$BRANCH)
+
   for (j in 1:nrow(ic_matrix))
   {
-    product = ic_matrix$CNA_PRODUIT[j]
-    ic_matrix[,product] = c(0)
-    for (i in 1:36)
-    {
-      if (sum(tei_data[,product],na.rm = T) > 0) {
-        ic_matrix[i,product] = round(tei_data[i,product] / sum(tei_data[,product],na.rm = T), digits = 6)
-        if(is.nan(ic_matrix[i,product]) || is.na(ic_matrix[i,product]) || is.null(ic_matrix[i,product]))
-        {
-          ic_matrix[i,product] = 0
-        }
-      }
+    product = ic_matrix$BRANCH[j]
+
+    if(product == "TZ"){
+      ic_matrix[,product] = 0
+    }else{
+      ic_matrix[match_vector,product] = tei_data[,product]
+      ic_matrix[,product] = replace_na(ic_matrix[,product],0)
     }
   }
-  names(ic_matrix)[names(ic_matrix) == 'CNA_PRODUIT'] = 'BRANCH'
+
+  for(j in 2:(ncol(ic_matrix)-1)){
+    ic_matrix[,j] = ic_matrix[,j] / sum(ic_matrix[,j],na.rm=T)
+  }
 
   return(ic_matrix)
 }
