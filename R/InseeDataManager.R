@@ -1,5 +1,8 @@
 #' @importFrom insee get_insee_dataset
 #' @importFrom dplyr %>%
+#' @importFrom dplyr arrange
+#' @importFrom dplyr add_row
+#' @importFrom dplyr case_when
 #' @importFrom dplyr select
 #' @importFrom dplyr mutate
 #' @importFrom dplyr arrange
@@ -189,16 +192,32 @@ get_branches_aggregates = function(year)
 get_divisions_aggregates = function(year)
 {
 
-  # fetch data (CPEB)
+  # fetch and format data (CPEB)
   insee_cpeb_data = try(get_insee_dataset(
     "CNA-2014-CPEB",
     startPeriod = year,
     endPeriod = year,
     filter = "A...VAL.....BRUT"
   ) %>%
-    filter(substr(CNA_ACTIVITE,1,3)=="A88"),silent = T)
+    filter(substr(CNA_ACTIVITE,1,3)=="A88" & OPERATION %in% c("P2","P1","B1G")) %>%
+    mutate(CNA_ACTIVITE = substr(CNA_ACTIVITE,5,6)) %>%
+    select(CNA_ACTIVITE,OPERATION,OBS_VALUE) %>%
+    pivot_wider(names_from = OPERATION,values_from = OBS_VALUE) %>%
+    arrange(CNA_ACTIVITE) %>%
+    rename(GVA = B1G, PRD = P1, IC = P2) %>%
+    mutate(GVA = case_when(is.na(GVA) ~ PRD - IC,
+                           T ~ GVA),
+           PRD = case_when(is.na(PRD) ~ IC + GVA,
+                           T ~ PRD),
+           IC = case_when(is.na(IC) ~ PRD - GVA,
+                           T ~ IC),
+           CFC = 0,
+           NVA = 0)%>%
+    relocate(c("CNA_ACTIVITE","PRD","IC","GVA")),silent = T)
 
-  if(nrow(insee_cpeb_data) == 0 || inherits(insee_cpeb_data,"try-error"))
+  divisions = lsnr:::Divisions
+
+  if(nrow(insee_cpeb_data) != (nrow(divisions)-1) || inherits(insee_cpeb_data,"try-error"))
   {
 
     if(year <= 2030 & year > 2020)
@@ -213,17 +232,21 @@ get_divisions_aggregates = function(year)
     }
   }
 
-  cpeb_data = insee_cpeb_data  %>%
-    filter(OPERATION %in% c('P1','P2','B1G')) %>%
-    select(CNA_ACTIVITE, OPERATION, OBS_VALUE) %>%
-    pivot_wider(names_from = OPERATION, values_from = OBS_VALUE) %>%
-    mutate(CNA_ACTIVITE = str_remove(CNA_ACTIVITE,"A88-")) %>%
-    arrange(CNA_ACTIVITE) %>%
-    mutate(CFC = 0,
-           NVA = 0)
+
+  if(all(divisions$DIVISION[-nrow(divisions)] %in% insee_cpeb_data$CNA_ACTIVITE) == F){
+
+    add = data.frame(CNA_ACTIVITE = divisions$DIVISION[-nrow(divisions)][divisions$DIVISION[-nrow(divisions)] %in% insee_cpeb_data$CNA_ACTIVITE == F],
+                     PRD = 0,
+                     IC = 0,
+                     GVA = 0,
+                     CFC = 0,
+                     NVA = 0)
+
+    insee_cpeb_data = insee_cpeb_data %>% add_row(add) %>% arrange(CNA_ACTIVITE)
+
+  }
 
 
-  divisions = lsnr:::Divisions
   branches_aggregates = get_branches_aggregates(year)
 
   #Assign CFC amount for division by extending CFC rate of the branch
@@ -231,18 +254,16 @@ get_divisions_aggregates = function(year)
   for(i in unique(branches_aggregates$BRANCH)){
 
     r = which(branches_aggregates$BRANCH == i)
-    divs = which(cpeb_data$CNA_ACTIVITE %in% divisions$DIVISION[divisions$BRANCH == i])
+    divs = which(insee_cpeb_data$CNA_ACTIVITE %in% divisions$DIVISION[divisions$BRANCH == i])
 
     ccf_rate = branches_aggregates$CFC[r] / (branches_aggregates$CFC[r] + branches_aggregates$NVA[r])
     ccf_rate = ifelse(is.nan(ccf_rate),0,ccf_rate)
 
-    cpeb_data$CFC[divs] = round(cpeb_data$B1G[divs] * ccf_rate,1)
-    cpeb_data$NVA[divs] = round(cpeb_data$B1G[divs] * (1 - ccf_rate),1)
+    insee_cpeb_data$CFC[divs] = round(insee_cpeb_data$GVA[divs] * ccf_rate,1)
+    insee_cpeb_data$NVA[divs] = round(insee_cpeb_data$GVA[divs] * (1 - ccf_rate),1)
   }
 
-  names(cpeb_data)[which(names(cpeb_data) %in% c("P1","P2","B1G"))] = c("PRD","IC","GVA")
-
-  return(cpeb_data)
+  return(insee_cpeb_data)
 }
 
 ###############################################################################################################
