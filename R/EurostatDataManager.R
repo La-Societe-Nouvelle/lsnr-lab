@@ -1,6 +1,6 @@
 #' @importFrom stringr str_locate
 
-
+#' @export
 get_eurostat_data = function(endpoint)
 {
   res = GET(endpoint)
